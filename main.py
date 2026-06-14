@@ -30,6 +30,7 @@ cooldowns: dict[str, float] = {}
 user_cooldowns: dict[str, float] = {}
 USER_COOLDOWN_REGULAR = 60
 USER_COOLDOWN_SUB     = 10
+sounds_silenced = False
 
 
 def get_role(password: str) -> str | None:
@@ -98,6 +99,18 @@ async def handle_command(content: str, sender: dict):
     is_sub = (sender.get("subscribed_for") or 0) > 0 or "subscriber" in badges
     is_privileged = is_broadcaster or is_mod
 
+    global sounds_silenced
+
+    if content == "!silencio" and is_privileged:
+        sounds_silenced = True
+        await broadcast_obs({"type": "silencio", "activo": True})
+        return
+
+    if content == "!activar" and is_privileged:
+        sounds_silenced = False
+        await broadcast_obs({"type": "silencio", "activo": False})
+        return
+
     if content == "!sonidos":
         last = cooldowns.get("!sonidos", 0)
         if time.time() - last < 20:
@@ -116,6 +129,9 @@ async def handle_command(content: str, sender: dict):
         result = supabase.table("sounds").select("command,subs_only,vips_only").eq("active", True).order("command").execute()
         commands = [s["command"] for s in result.data if s.get("subs_only") or s.get("vips_only")]
         await broadcast_obs({"type": "sonidos", "commands": commands, "titulo": "Sonidos especiales (Subs y VIP)"})
+        return
+
+    if sounds_silenced:
         return
 
     # Cooldown por usuario segun rol

@@ -53,6 +53,17 @@
   }
   @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
+  #silencio-badge {
+    position: absolute; top: 16px; right: 24px;
+    background: linear-gradient(135deg, rgba(20,0,0,0.97), rgba(50,0,0,0.95));
+    border: 2px solid #ff4d4d; border-radius: 12px;
+    padding: 10px 20px; color: #ff4d4d; font-size: 0.9rem; font-weight: 700;
+    display: none; align-items: center; gap: 8px;
+    box-shadow: 0 0 20px rgba(255,77,77,0.4);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  #silencio-badge.show { display: flex; }
+
   /* PANEL de sonidos */
   #sonidos-panel {
     position: absolute; top: 16px; left: 50%; transform: translateX(-50%) translateY(-14px);
@@ -86,6 +97,7 @@
 </head>
 <body>
 
+<div id="silencio-badge">🔇 Sonidos desactivados</div>
 <div id="notification">
   <div class="notif-icon">&#128266;</div>
   <div class="notif-body">
@@ -114,6 +126,9 @@ function connect() {
     if (data.type === 'play') playAudio(data.url, data.command, data.volume ?? 80);
     else if (data.type === 'sonidos') showSonidos(data.commands, data.titulo);
     else if (data.type === 'set_volume') { globalVol = data.value; localStorage.setItem('globalVol', data.value); }
+    else if (data.type === 'silencio') {
+      document.getElementById('silencio-badge').classList.toggle('show', data.activo);
+    }
   };
   socket.onclose = () => setTimeout(connect, 3000);
 }
