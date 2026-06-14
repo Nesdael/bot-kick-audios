@@ -72,7 +72,7 @@ body::before {
 .btn-primary { background: var(--primary); color: #000; }
 .btn-red { background: var(--red); color: #fff; }
 .btn-blue { background: var(--gold); color: #fff; }
-.btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost { background: var(--surface2); color: #c0d8f0; border: 1px solid var(--border); }
 .btn-full { width: 100%; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .error-msg { color: var(--red); font-size: 0.82rem; margin-top: 10px; min-height: 18px; }
@@ -162,12 +162,13 @@ th { text-align: left; padding: 8px 12px; font-size: 0.75rem; color: var(--muted
 td { padding: 10px 12px; border-bottom: 1px solid rgba(0,30,60,0.3); vertical-align: middle; }
 tr:hover td { background: rgba(0,30,60,0.4); }
 .cmd { font-family: monospace; background: var(--gold-dim); color: var(--gold); padding: 3px 8px; border-radius: 5px; font-size: 0.85rem; }
-.filename { color: var(--muted); font-size: 0.8rem; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filename { color: var(--muted); font-size: 0.8rem; max-width: 200px; width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+td:nth-child(2) { max-width: 200px; width: 200px; overflow: hidden; }
 .toggle { position: relative; width: 38px; height: 20px; flex-shrink: 0; }
 .toggle input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; inset: 0; background: #1a2a3a; border-radius: 20px; transition: .25s; }
-.slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #666; border-radius: 50%; transition: .25s; }
-input:checked + .slider { background: rgba(0,170,255,0.3); }
+.slider { position: absolute; cursor: pointer; inset: 0; background: #3a3a4a; border-radius: 20px; transition: .25s; }
+.slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #aaa; border-radius: 50%; transition: .25s; }
+input:checked + .slider { background: rgba(0,170,255,0.45); }
 input:checked + .slider:before { transform: translateX(18px); background: var(--primary); }
 .row-vol { display: flex; align-items: center; gap: 6px; }
 .row-vol input[type=range] {
