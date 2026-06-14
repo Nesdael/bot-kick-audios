@@ -1,5 +1,5 @@
 # 🎵 Bot de Audios para Kick — TutoManX
-### v1.8.0
+### v1.9.0
 
 Bot para el canal [kick.com/tutomanx](https://kick.com/tutomanx) que permite reproducir audios en el stream cuando los espectadores escriben comandos en el chat. El panel de administración permite gestionar los sonidos, y el audio se reproduce directamente en OBS usando una Browser Source.
 
@@ -53,6 +53,8 @@ Chat de Kick → Bot en Render → WebSocket → OBS Browser Source → 🔊 Aud
 - **Amplificación de audio** — volumen hasta 200% usando la Web Audio API con GainNode
 - **Persistencia** — el navegador recuerda el volumen global y el usuario seleccionado
 - **Diseño TutoManX** — colores azul y dorado, fondo de circuito, favicon con logo del canal
+- **Notificación en stream** — cuando suena un audio aparece una tarjeta arriba a la derecha con el nombre del comando y una barra de progreso que dura lo que dura el sonido
+- **Subida masiva** — script `subir_sonidos.py` para cargar cientos de audios de una sola vez
 
 ---
 
@@ -112,7 +114,7 @@ Antes de desplegar necesitas tener creadas las siguientes cuentas gratuitas:
    ```
    https://tu-app.onrender.com/obs
    ```
-3. Dimensiones recomendadas: **800 × 200 px**.
+3. Dimensiones recomendadas: **1920 × 1080 px**.
 4. En las propiedades avanzadas de audio de esa fuente, activa **"Monitor y salida"** para que el audio se escuche tanto en el stream como en tus auriculares.
 
 ---
@@ -136,12 +138,19 @@ Accede en `https://tu-app.onrender.com` e inicia sesión con tu perfil:
 
 Haz clic en el botón ▶ en la tabla para reproducirlo directamente en OBS sin necesidad de escribirlo en el chat.
 
+### Sonidos exclusivos
+
+En la tabla de sonidos puedes activar dos toggles por sonido:
+- **Subs ⭐** — solo suscriptores, VIP, mods y broadcaster pueden usarlo
+- **VIP 💎** — solo VIP, mods y broadcaster pueden usarlo
+
 ### Comandos disponibles en el chat
 
 | Comando | Resultado |
 |---|---|
 | `!nombre` | Reproduce el audio asignado a ese comando |
-| `!sonidos` | Muestra en el stream una lista de todos los comandos activos |
+| `!sonidos` | Muestra en el stream los sonidos disponibles para todos |
+| `!sonidosubs` | Muestra en el stream los sonidos exclusivos de Subs y VIP |
 
 ---
 
@@ -152,6 +161,7 @@ bot-kick-audios/
 ├── main.py                 # Servidor FastAPI, bot de Kick, WebSocket, API y proxy de audio
 ├── requirements.txt        # Dependencias Python
 ├── supabase_setup.sql      # SQL para crear la base de datos y el storage
+├── subir_sonidos.py        # Script para subida masiva de audios
 └── static/
     ├── admin.html          # Panel de administración (frontend)
     ├── obs.html            # Página de reproducción para OBS Browser Source
@@ -196,6 +206,14 @@ bot-kick-audios/
 **Error al subir un audio**
 - Verifica que el archivo no supere 20 MB.
 - Solo se aceptan formatos MP3, WAV, OGG y M4A.
+
+**Un usuario regular no puede usar ningún sonido**
+- Verifica que el sonido no tenga activado "Solo subs ⭐" o "Solo VIP 💎".
+- El cooldown de 60 segundos por usuario es global — si alguien usó un sonido hace menos de un minuto, debe esperar.
+
+**La notificación o el panel de sonidos no aparecen en OBS**
+- Refresca la caché de la Browser Source en OBS: clic derecho → Propiedades → "Actualizar caché de la página actual".
+- Verifica que la Browser Source tenga dimensiones **1920 × 1080 px**.
 
 ---
 
