@@ -107,6 +107,16 @@ async def handle_command(content: str, sender: dict):
         await broadcast_obs({"type": "sonidos", "commands": commands})
         return
 
+    if content == "!sonidosubs":
+        last = cooldowns.get("!sonidosubs", 0)
+        if time.time() - last < 20:
+            return
+        cooldowns["!sonidosubs"] = time.time()
+        result = supabase.table("sounds").select("command,subs_only,vips_only").eq("active", True).order("command").execute()
+        commands = [s["command"] for s in result.data if s.get("subs_only") or s.get("vips_only")]
+        await broadcast_obs({"type": "sonidos", "commands": commands, "titulo": "Sonidos especiales (Subs y VIP)"})
+        return
+
     # Cooldown global por usuario (60 segundos entre cualquier sonido)
     if username:
         last_user = user_cooldowns.get(username, 0)

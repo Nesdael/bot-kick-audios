@@ -21,6 +21,7 @@
   }
   #sonidos-panel.show { opacity: 1; }
   #sonidos-panel h3 { color: #00aaff; font-size: 1rem; margin-bottom: 12px; letter-spacing: 0.03em; }
+  #sonidos-panel h3 span.vip { color: #FFD700; }
   #sonidos-list { display: flex; flex-wrap: wrap; gap: 7px; }
   .cmd-chip {
     background: rgba(0,170,255,0.15); border: 1px solid #00aaff;
@@ -48,7 +49,7 @@ function connect() {
   socket.onmessage = (e) => {
     const data = JSON.parse(e.data);
     if (data.type === 'play') playAudio(data.url, data.command, data.volume ?? 80);
-    else if (data.type === 'sonidos') showSonidos(data.commands);
+    else if (data.type === 'sonidos') showSonidos(data.commands, data.titulo);
     else if (data.type === 'set_volume') { globalVol = data.value; localStorage.setItem('globalVol', data.value); }
   };
   socket.onclose = () => setTimeout(connect, 3000);
@@ -82,8 +83,12 @@ async function playAudio(url, command, soundVol) {
   notifTimer = setTimeout(() => notif.classList.remove('show'), 3000);
 }
 
-function showSonidos(commands) {
+function showSonidos(commands, titulo) {
   const panel = document.getElementById('sonidos-panel');
+  const h3 = panel.querySelector('h3');
+  h3.innerHTML = titulo
+    ? `🎵 ${titulo} — escribe el comando en el chat`
+    : '🎵 Sonidos disponibles — escribe el comando en el chat';
   document.getElementById('sonidos-list').innerHTML = commands.map(c => `<span class="cmd-chip">${c}</span>`).join('');
   panel.classList.add('show');
   clearTimeout(sonidosTimer);
