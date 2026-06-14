@@ -283,6 +283,15 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
           </div>
         </div>
       </div>
+      <div class="field" style="margin-bottom:14px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <label class="toggle" style="margin:0">
+            <input type="checkbox" id="new-subs-only">
+            <span class="slider"></span>
+          </label>
+          <span>Solo para suscriptores ⭐</span>
+        </label>
+      </div>
       <div class="file-drop" id="drop-zone"
         ondragover="event.preventDefault();this.classList.add('over')"
         ondragleave="this.classList.remove('over')"
@@ -333,6 +342,15 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
           <span class="vol-pct" id="edit-vol-pct">80%</span>
         </div>
       </div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <label class="toggle" style="margin:0">
+          <input type="checkbox" id="edit-subs-only">
+          <span class="slider"></span>
+        </label>
+        <span>Solo para suscriptores ⭐</span>
+      </label>
     </div>
     <div class="field" style="margin-bottom:4px">
       <label>Reemplazar audio (opcional)</label>
@@ -485,7 +503,7 @@ function renderTable(sounds) {
   const isAdmin = ROLE === 'admin';
   el.innerHTML = `<table>
     <thead><tr>
-      <th>Comando</th><th>Archivo</th><th>Cooldown</th><th>Volumen</th><th>Activo</th><th>Acciones</th>
+      <th>Comando</th><th>Archivo</th><th>Cooldown</th><th>Volumen</th><th>Activo</th><th>Solo subs ⭐</th><th>Acciones</th>
     </tr></thead>
     <tbody>
     ${sounds.map(s => {
@@ -506,6 +524,12 @@ function renderTable(sounds) {
         <td>
           <label class="toggle">
             <input type="checkbox" ${s.active ? 'checked' : ''} onchange="toggleActive(${s.id},this.checked)">
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td>
+          <label class="toggle">
+            <input type="checkbox" ${s.subs_only ? 'checked' : ''} onchange="toggleSubsOnly(${s.id},this.checked)">
             <span class="slider"></span>
           </label>
         </td>
@@ -556,6 +580,7 @@ async function addSound() {
   fd.append('command', document.getElementById('new-cmd').value.trim());
   fd.append('cooldown', document.getElementById('new-cooldown').value);
   fd.append('volume', document.getElementById('new-vol').value);
+  fd.append('subs_only', document.getElementById('new-subs-only').checked ? '1' : '0');
   fd.append('password', PASSWORD);
   fd.append('file', document.getElementById('new-file').files[0]);
 
@@ -579,6 +604,13 @@ async function toggleActive(id, active) {
   await fetch(`${BASE}/api/sounds/${id}`, {
     method: 'PUT', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ active, password: PASSWORD })
+  });
+}
+
+async function toggleSubsOnly(id, subs_only) {
+  await fetch(`${BASE}/api/sounds/${id}`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ subs_only, password: PASSWORD })
   });
 }
 
@@ -609,6 +641,7 @@ function openEdit(id) {
   editVol.value = vol;
   editVol.style.setProperty('--val', Math.round(vol / 2) + '%');
   document.getElementById('edit-vol-pct').textContent = vol + '%';
+  document.getElementById('edit-subs-only').checked = !!s.subs_only;
   document.getElementById('edit-file').value = '';
   document.getElementById('modal').classList.add('open');
 }
@@ -619,20 +652,22 @@ async function saveEdit() {
   const cmd = document.getElementById('edit-cmd').value.trim();
   const cooldown = parseInt(document.getElementById('edit-cooldown').value);
   const volume = parseInt(document.getElementById('edit-vol').value);
+  const subs_only = document.getElementById('edit-subs-only').checked;
   const file = document.getElementById('edit-file').files[0];
   if (!cmd) { showToast('El comando no puede estar vacio', true); return; }
 
   if (file) {
     const fd = new FormData();
     fd.append('command', cmd); fd.append('cooldown', cooldown);
-    fd.append('volume', volume); fd.append('password', PASSWORD); fd.append('file', file);
+    fd.append('volume', volume); fd.append('subs_only', subs_only ? '1' : '0');
+    fd.append('password', PASSWORD); fd.append('file', file);
     const r = await fetch(`${BASE}/api/sounds`, { method: 'POST', body: fd });
     if (!r.ok) { showToast('Error al subir', true); return; }
     await fetch(`${BASE}/api/sounds/${id}?password=${encodeURIComponent(PASSWORD)}`, { method: 'DELETE' });
   } else {
     await fetch(`${BASE}/api/sounds/${id}`, {
       method: 'PUT', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ command: cmd, cooldown, volume, password: PASSWORD })
+      body: JSON.stringify({ command: cmd, cooldown, volume, subs_only, password: PASSWORD })
     });
   }
   closeModal(); showToast('Guardado'); loadSounds();

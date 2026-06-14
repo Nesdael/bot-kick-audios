@@ -27,6 +27,8 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 obs_connections: set[WebSocket] = set()
 cooldowns: dict[str, float] = {}
+user_cooldowns: dict[str, float] = {}
+USER_COOLDOWN = 60
 
 
 def get_role(password: str) -> str | None:
@@ -78,10 +80,13 @@ async def broadcast_obs(payload: dict):
     obs_connections.difference_update(dead)
 
 
-async def handle_command(content: str):
+async def handle_command(content: str, sender: dict):
     content = content.strip().lower()
     if not content.startswith("!"):
         return
+
+    username = sender.get("slug") or sender.get("username") or "anon"
+    is_sub = (sender.get("subscribed_for") or 0) > 0
 
     if content == "!sonidos":
         last = cooldowns.get("!sonidos", 0)
@@ -93,12 +98,21 @@ async def handle_command(content: str):
         await broadcast_obs({"type": "sonidos", "commands": commands})
         return
 
+    # Cooldown global por usuario (60 segundos entre cualquier sonido)
+    last_user = user_cooldowns.get(username, 0)
+    if time.time() - last_user < USER_COOLDOWN:
+        return
+
     result = supabase.table("sounds").select("*").eq("active", True).execute()
     for sound in result.data:
         if content == sound["command"].lower():
+            # Verificar si es solo para subs
+            if sound.get("subs_only") and not is_sub:
+                return
             last = cooldowns.get(sound["command"], 0)
             if time.time() - last >= sound["cooldown"]:
                 cooldowns[sound["command"]] = time.time()
+                user_cooldowns[username] = time.time()
                 filename = sound["audio_url"].split("/")[-1]
                 proxy_url = f"{APP_URL}/audio/{filename}" if APP_URL else sound["audio_url"]
                 await broadcast_obs({
@@ -131,7 +145,7 @@ async def kick_bot():
                         await ws.send(json.dumps({"event": "pusher:pong", "data": {}}))
                     elif msg.get("event") == "App\\Events\\ChatMessageEvent":
                         data = json.loads(msg["data"])
-                        asyncio.create_task(handle_command(data.get("content", "")))
+                        asyncio.create_task(handle_command(data.get("content", ""), data.get("sender", {})))
 
         except Exception as e:
             print(f"[Bot] Error: {e} — reconectando en 5s...")
@@ -212,6 +226,7 @@ async def create_sound(
     command: str = Form(...),
     cooldown: int = Form(10),
     volume: int = Form(80),
+    subs_only: int = Form(0),
     password: str = Form(...),
     file: UploadFile = File(...),
 ):
@@ -246,13 +261,14 @@ async def create_sound(
     if existing.data:
         result = supabase.table("sounds").update({
             "filename": file.filename, "audio_url": audio_url,
-            "cooldown": cooldown, "volume": volume, "active": True
+            "cooldown": cooldown, "volume": volume, "active": True,
+            "subs_only": bool(subs_only)
         }).eq("command", command).execute()
     else:
         result = supabase.table("sounds").insert({
             "command": command, "filename": file.filename,
             "audio_url": audio_url, "cooldown": cooldown,
-            "volume": volume, "active": True
+            "volume": volume, "active": True, "subs_only": bool(subs_only)
         }).execute()
 
     return result.data[0]
