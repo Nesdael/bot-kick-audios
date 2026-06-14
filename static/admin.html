@@ -216,8 +216,9 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
       </div>
     </div>
 
-    <div class="input-wrap">
-      <input type="password" id="pwd" placeholder="Contrasena" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="input-wrap" style="position:relative">
+      <input type="password" id="pwd" placeholder="Contrasena" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:44px">
+      <button onclick="togglePwd()" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--muted);padding:0" id="eye-btn">&#128065;</button>
     </div>
     <button class="btn btn-green btn-full" onclick="doLogin()">Entrar</button>
     <div class="error-msg" id="login-err"></div>
@@ -342,6 +343,13 @@ let PASSWORD = '';
 let ROLE = '';
 let SELECTED_USER = '';
 let ALL_SOUNDS = [];
+
+function togglePwd() {
+  const input = document.getElementById('pwd');
+  const btn = document.getElementById('eye-btn');
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.innerHTML = '&#128065;'; }
+}
 
 function selectUser(type) {
   SELECTED_USER = type;
