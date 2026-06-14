@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import json
 import os
 import time
@@ -85,7 +85,7 @@ async def handle_command(content: str):
 
 
 async def kick_bot():
-    pusher_url = "wss://ws-us2.pusher.com/app/eb1d5f283081a78b932c?protocol=7&client=js&version=7.6.0&flash=false&cluster=us2"
+    pusher_url = "wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=7.6.0&flash=false"
     while True:
         try:
             print(f"[Bot] Conectando al chat de {KICK_CHANNEL}...")
@@ -112,7 +112,7 @@ async def kick_bot():
                         asyncio.create_task(handle_command(content))
 
         except Exception as e:
-            print(f"[Bot] Error: {e} — reconectando en 5s...")
+            print(f"[Bot] Error: {e} â€” reconectando en 5s...")
             await asyncio.sleep(5)
 
 
@@ -168,11 +168,11 @@ async def websocket_endpoint(websocket: WebSocket):
         obs_connections.discard(websocket)
 
 
-# ── API ──────────────────────────────────────────────────────────────────────
+# â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def auth(password: str):
     if password != ADMIN_PASSWORD:
-        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+        raise HTTPException(status_code=401, detail="ContraseÃ±a incorrecta")
 
 
 @app.get("/api/sounds")
@@ -250,3 +250,4 @@ async def test_sound(sound_id: int, request: Request):
     sound = row.data[0]
     await broadcast_obs({"type": "play", "url": sound["audio_url"], "command": sound["command"]})
     return {"ok": True}
+
