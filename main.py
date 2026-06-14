@@ -102,8 +102,8 @@ async def handle_command(content: str, sender: dict):
         if time.time() - last < 20:
             return
         cooldowns["!sonidos"] = time.time()
-        result = supabase.table("sounds").select("command").eq("active", True).order("command").execute()
-        commands = [s["command"] for s in result.data]
+        result = supabase.table("sounds").select("command,subs_only,vips_only").eq("active", True).order("command").execute()
+        commands = [s["command"] for s in result.data if not s.get("subs_only") and not s.get("vips_only")]
         await broadcast_obs({"type": "sonidos", "commands": commands})
         return
 
