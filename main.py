@@ -85,8 +85,12 @@ async def handle_command(content: str, sender: dict):
     if not content.startswith("!"):
         return
 
-    username = sender.get("slug") or sender.get("username") or "anon"
-    badges = {b.get("type", "").lower() for b in (sender.get("identity") or {}).get("badges", [])}
+    uid = sender.get("id")
+    username = str(uid) if uid else (sender.get("slug") or sender.get("username") or "")
+    try:
+        badges = {b.get("type", "").lower() for b in (sender.get("identity") or {}).get("badges", [])}
+    except Exception:
+        badges = set()
     is_broadcaster = "broadcaster" in badges
     is_mod = "moderator" in badges
     is_vip = "vip" in badges
@@ -104,9 +108,10 @@ async def handle_command(content: str, sender: dict):
         return
 
     # Cooldown global por usuario (60 segundos entre cualquier sonido)
-    last_user = user_cooldowns.get(username, 0)
-    if time.time() - last_user < USER_COOLDOWN:
-        return
+    if username:
+        last_user = user_cooldowns.get(username, 0)
+        if time.time() - last_user < USER_COOLDOWN:
+            return
 
     result = supabase.table("sounds").select("*").eq("active", True).execute()
     for sound in result.data:
@@ -120,7 +125,8 @@ async def handle_command(content: str, sender: dict):
             last = cooldowns.get(sound["command"], 0)
             if time.time() - last >= sound["cooldown"]:
                 cooldowns[sound["command"]] = time.time()
-                user_cooldowns[username] = time.time()
+                if username:
+                    user_cooldowns[username] = time.time()
                 filename = sound["audio_url"].split("/")[-1]
                 proxy_url = f"{APP_URL}/audio/{filename}" if APP_URL else sound["audio_url"]
                 await broadcast_obs({
