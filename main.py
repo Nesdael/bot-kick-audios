@@ -28,7 +28,8 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 obs_connections: set[WebSocket] = set()
 cooldowns: dict[str, float] = {}
 user_cooldowns: dict[str, float] = {}
-USER_COOLDOWN = 60
+USER_COOLDOWN_REGULAR = 60
+USER_COOLDOWN_SUB     = 10
 
 
 def get_role(password: str) -> str | None:
@@ -117,10 +118,10 @@ async def handle_command(content: str, sender: dict):
         await broadcast_obs({"type": "sonidos", "commands": commands, "titulo": "Sonidos especiales (Subs y VIP)"})
         return
 
-    # Cooldown global por usuario (60 segundos entre cualquier sonido)
-    if username:
-        last_user = user_cooldowns.get(username, 0)
-        if time.time() - last_user < USER_COOLDOWN:
+    # Cooldown por usuario segun rol
+    if username and not is_privileged:
+        cooldown_user = USER_COOLDOWN_SUB if (is_sub or is_vip) else USER_COOLDOWN_REGULAR
+        if time.time() - user_cooldowns.get(username, 0) < cooldown_user:
             return
 
     result = supabase.table("sounds").select("*").eq("active", True).execute()
