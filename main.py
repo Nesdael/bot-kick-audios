@@ -15,8 +15,12 @@ from supabase import create_client
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 KICK_CHANNEL = os.getenv("KICK_CHANNEL", "tutomanx")
+KICK_CHATROOM_ID = os.getenv("KICK_CHATROOM_ID", "")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "cambiar123")
 APP_URL = os.getenv("APP_URL", "")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise RuntimeError("Faltan variables de entorno: SUPABASE_URL y SUPABASE_SERVICE_KEY")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -25,11 +29,27 @@ cooldowns: dict[str, float] = {}
 
 
 async def get_chatroom_id(channel: str) -> int:
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-    async with httpx.AsyncClient() as client:
-        r = await client.get(f"https://kick.com/api/v2/channels/{channel}", headers=headers, timeout=10)
-        r.raise_for_status()
-        return r.json()["chatroom"]["id"]
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://kick.com/",
+        "Origin": "https://kick.com",
+    }
+    # Try v2 first, fallback to v1
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        for url in [
+            f"https://kick.com/api/v2/channels/{channel}",
+            f"https://kick.com/api/v1/channels/{channel}",
+        ]:
+            try:
+                r = await client.get(url, headers=headers, timeout=15)
+                if r.status_code == 200:
+                    data = r.json()
+                    return data["chatroom"]["id"]
+            except Exception:
+                continue
+    raise RuntimeError(f"No se pudo obtener chatroom ID para {channel}")
 
 
 async def broadcast_obs(payload: dict):
@@ -69,7 +89,10 @@ async def kick_bot():
     while True:
         try:
             print(f"[Bot] Conectando al chat de {KICK_CHANNEL}...")
-            chatroom_id = await get_chatroom_id(KICK_CHANNEL)
+            if KICK_CHATROOM_ID:
+                chatroom_id = int(KICK_CHATROOM_ID)
+            else:
+                chatroom_id = await get_chatroom_id(KICK_CHANNEL)
             print(f"[Bot] Chatroom ID: {chatroom_id}")
 
             async with websockets.connect(pusher_url) as ws:
