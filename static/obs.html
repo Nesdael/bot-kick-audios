@@ -5,35 +5,99 @@
 <title>OBS Audio Player</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: transparent; overflow: hidden; width: 800px; height: 200px; font-family: 'Segoe UI', sans-serif; }
+  body {
+    background: transparent; overflow: hidden;
+    width: 1920px; height: 1080px;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  /* NOTIFICACION de sonido */
   #notification {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.88); border: 2px solid #53fc18; border-radius: 12px;
-    padding: 10px 22px; color: #53fc18; font-size: 1rem; font-weight: 700;
-    white-space: nowrap; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    position: absolute; top: 24px; right: 32px;
+    display: flex; align-items: center; gap: 14px;
+    background: linear-gradient(135deg, rgba(0,5,20,0.97), rgba(0,20,50,0.95));
+    border: 2px solid #00aaff; border-radius: 16px;
+    padding: 14px 24px;
+    box-shadow: 0 0 28px rgba(0,170,255,0.45), inset 0 0 20px rgba(0,170,255,0.05);
+    opacity: 0; transform: translateX(30px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    pointer-events: none; min-width: 280px; max-width: 480px;
   }
-  #notification.show { opacity: 1; }
+  #notification.show { opacity: 1; transform: translateX(0); }
+
+  .notif-icon {
+    width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #0077cc, #00aaff);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 0 12px rgba(0,170,255,0.6);
+  }
+  .notif-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .notif-label {
+    font-size: 0.72rem; color: #5ab4e0; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .notif-cmd {
+    font-family: monospace; font-size: 1.1rem; font-weight: 700;
+    color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .notif-bar {
+    position: absolute; bottom: 0; left: 0; height: 3px;
+    background: linear-gradient(to right, #00aaff, #0044cc);
+    border-radius: 0 0 14px 14px;
+    width: 100%; transform-origin: left;
+    animation: none;
+  }
+  #notification.show .notif-bar {
+    animation: shrink var(--dur, 4s) linear forwards;
+  }
+  @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+  /* PANEL de sonidos */
   #sonidos-panel {
-    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,5,20,0.95); border: 2px solid #00aaff; border-radius: 14px;
-    padding: 18px 26px; opacity: 0; transition: opacity 0.4s; pointer-events: none; max-width: 780px;
-    box-shadow: 0 0 24px rgba(0,170,255,0.4);
+    position: absolute; top: 24px; left: 32px;
+    background: linear-gradient(135deg, rgba(0,5,20,0.97), rgba(0,20,50,0.95));
+    border: 2px solid #00aaff; border-radius: 16px;
+    padding: 16px 22px; max-width: 860px;
+    box-shadow: 0 0 28px rgba(0,170,255,0.4), inset 0 0 20px rgba(0,170,255,0.04);
+    opacity: 0; transform: translateY(-14px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
   }
-  #sonidos-panel.show { opacity: 1; }
-  #sonidos-panel h3 { color: #00aaff; font-size: 1rem; margin-bottom: 12px; letter-spacing: 0.03em; }
-  #sonidos-panel h3 span.vip { color: #FFD700; }
-  #sonidos-list { display: flex; flex-wrap: wrap; gap: 7px; }
+  #sonidos-panel.show { opacity: 1; transform: translateY(0); }
+
+  #sonidos-panel h3 {
+    color: #00aaff; font-size: 0.85rem; margin-bottom: 12px;
+    letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #sonidos-panel h3::before {
+    content: ''; display: inline-block; width: 8px; height: 8px;
+    background: #00aaff; border-radius: 50%;
+    box-shadow: 0 0 8px #00aaff;
+  }
+  #sonidos-list { display: flex; flex-wrap: wrap; gap: 8px; }
   .cmd-chip {
-    background: rgba(0,170,255,0.15); border: 1px solid #00aaff;
-    color: #fff; border-radius: 7px; padding: 5px 13px;
-    font-size: 0.95rem; font-family: monospace; font-weight: 600;
+    background: rgba(0,170,255,0.12); border: 1px solid rgba(0,170,255,0.5);
+    color: #e0f4ff; border-radius: 8px; padding: 5px 14px;
+    font-size: 0.92rem; font-family: monospace; font-weight: 600;
+    transition: background 0.2s;
   }
 </style>
 </head>
 <body>
-<div id="notification"></div>
+
+<div id="notification">
+  <div class="notif-icon">&#128266;</div>
+  <div class="notif-body">
+    <span class="notif-label">Sonando ahora</span>
+    <span class="notif-cmd" id="notif-cmd"></span>
+  </div>
+  <div class="notif-bar" id="notif-bar"></div>
+</div>
+
 <div id="sonidos-panel">
-  <h3>🎵 Sonidos disponibles — escribe el comando en el chat</h3>
+  <h3 id="sonidos-titulo">Sonidos disponibles — escribe el comando en el chat</h3>
   <div id="sonidos-list"></div>
 </div>
 
@@ -69,27 +133,41 @@ async function playAudio(url, command, soundVol) {
     source.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     source.start(0);
+    showNotification(command, audioBuffer.duration);
   } catch(e) {
-    // Fallback: simple Audio element with capped volume
     console.warn('Web Audio fallback:', e);
     const audio = new Audio(url);
     audio.volume = Math.min(1, gain);
     audio.play().catch(console.error);
+    showNotification(command, 4);
   }
+}
+
+function showNotification(command, duration) {
   const notif = document.getElementById('notification');
-  notif.textContent = `🔊 ${command}`;
+  const bar = document.getElementById('notif-bar');
+  document.getElementById('notif-cmd').textContent = command;
+
+  // Reiniciar animacion de barra
+  bar.style.animation = 'none';
+  bar.style.setProperty('--dur', (duration + 0.5) + 's');
+  notif.classList.remove('show');
+  void notif.offsetWidth; // forzar reflow
   notif.classList.add('show');
+  bar.style.animation = '';
+
   clearTimeout(notifTimer);
-  notifTimer = setTimeout(() => notif.classList.remove('show'), 3000);
+  notifTimer = setTimeout(() => notif.classList.remove('show'), (duration + 0.5) * 1000);
 }
 
 function showSonidos(commands, titulo) {
   const panel = document.getElementById('sonidos-panel');
-  const h3 = panel.querySelector('h3');
-  h3.innerHTML = titulo
-    ? `🎵 ${titulo} — escribe el comando en el chat`
-    : '🎵 Sonidos disponibles — escribe el comando en el chat';
-  document.getElementById('sonidos-list').innerHTML = commands.map(c => `<span class="cmd-chip">${c}</span>`).join('');
+  document.getElementById('sonidos-titulo').textContent =
+    titulo || 'Sonidos disponibles — escribe el comando en el chat';
+  document.getElementById('sonidos-list').innerHTML =
+    commands.map(c => `<span class="cmd-chip">${c}</span>`).join('');
+  panel.classList.remove('show');
+  void panel.offsetWidth;
   panel.classList.add('show');
   clearTimeout(sonidosTimer);
   sonidosTimer = setTimeout(() => panel.classList.remove('show'), 20000);
