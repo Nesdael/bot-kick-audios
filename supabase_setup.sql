@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS sounds (
   active     BOOLEAN DEFAULT true,
   cooldown   INTEGER DEFAULT 10,
   subs_only  BOOLEAN DEFAULT false,
+  vips_only  BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

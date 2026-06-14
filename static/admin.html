@@ -283,13 +283,20 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
           </div>
         </div>
       </div>
-      <div class="field" style="margin-bottom:14px">
+      <div style="display:flex;gap:24px;margin-bottom:14px">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
           <label class="toggle" style="margin:0">
             <input type="checkbox" id="new-subs-only">
             <span class="slider"></span>
           </label>
-          <span>Solo para suscriptores ⭐</span>
+          <span>Solo subs ⭐</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <label class="toggle" style="margin:0">
+            <input type="checkbox" id="new-vips-only">
+            <span class="slider"></span>
+          </label>
+          <span>Solo VIP 💎</span>
         </label>
       </div>
       <div class="file-drop" id="drop-zone"
@@ -343,13 +350,20 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
         </div>
       </div>
     </div>
-    <div class="field" style="margin-bottom:14px">
+    <div style="display:flex;gap:24px;margin-bottom:14px">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
         <label class="toggle" style="margin:0">
           <input type="checkbox" id="edit-subs-only">
           <span class="slider"></span>
         </label>
-        <span>Solo para suscriptores ⭐</span>
+        <span>Solo subs ⭐</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <label class="toggle" style="margin:0">
+          <input type="checkbox" id="edit-vips-only">
+          <span class="slider"></span>
+        </label>
+        <span>Solo VIP 💎</span>
       </label>
     </div>
     <div class="field" style="margin-bottom:4px">
@@ -503,7 +517,7 @@ function renderTable(sounds) {
   const isAdmin = ROLE === 'admin';
   el.innerHTML = `<table>
     <thead><tr>
-      <th>Comando</th><th>Archivo</th><th>Cooldown</th><th>Volumen</th><th>Activo</th><th>Solo subs ⭐</th><th>Acciones</th>
+      <th>Comando</th><th>Archivo</th><th>Cooldown</th><th>Volumen</th><th>Activo</th><th>Subs ⭐</th><th>VIP 💎</th><th>Acciones</th>
     </tr></thead>
     <tbody>
     ${sounds.map(s => {
@@ -530,6 +544,12 @@ function renderTable(sounds) {
         <td>
           <label class="toggle">
             <input type="checkbox" ${s.subs_only ? 'checked' : ''} onchange="toggleSubsOnly(${s.id},this.checked)">
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td>
+          <label class="toggle">
+            <input type="checkbox" ${s.vips_only ? 'checked' : ''} onchange="toggleVipsOnly(${s.id},this.checked)">
             <span class="slider"></span>
           </label>
         </td>
@@ -581,6 +601,7 @@ async function addSound() {
   fd.append('cooldown', document.getElementById('new-cooldown').value);
   fd.append('volume', document.getElementById('new-vol').value);
   fd.append('subs_only', document.getElementById('new-subs-only').checked ? '1' : '0');
+  fd.append('vips_only', document.getElementById('new-vips-only').checked ? '1' : '0');
   fd.append('password', PASSWORD);
   fd.append('file', document.getElementById('new-file').files[0]);
 
@@ -614,6 +635,13 @@ async function toggleSubsOnly(id, subs_only) {
   });
 }
 
+async function toggleVipsOnly(id, vips_only) {
+  await fetch(`${BASE}/api/sounds/${id}`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ vips_only, password: PASSWORD })
+  });
+}
+
 async function deleteSound(id, cmd) {
   if (!confirm(`Eliminar "${cmd}"? Esta accion no se puede deshacer.`)) return;
   const res = await fetch(`${BASE}/api/sounds/${id}?password=${encodeURIComponent(PASSWORD)}`, { method: 'DELETE' });
@@ -642,6 +670,7 @@ function openEdit(id) {
   editVol.style.setProperty('--val', Math.round(vol / 2) + '%');
   document.getElementById('edit-vol-pct').textContent = vol + '%';
   document.getElementById('edit-subs-only').checked = !!s.subs_only;
+  document.getElementById('edit-vips-only').checked = !!s.vips_only;
   document.getElementById('edit-file').value = '';
   document.getElementById('modal').classList.add('open');
 }
@@ -653,6 +682,7 @@ async function saveEdit() {
   const cooldown = parseInt(document.getElementById('edit-cooldown').value);
   const volume = parseInt(document.getElementById('edit-vol').value);
   const subs_only = document.getElementById('edit-subs-only').checked;
+  const vips_only = document.getElementById('edit-vips-only').checked;
   const file = document.getElementById('edit-file').files[0];
   if (!cmd) { showToast('El comando no puede estar vacio', true); return; }
 
@@ -660,6 +690,7 @@ async function saveEdit() {
     const fd = new FormData();
     fd.append('command', cmd); fd.append('cooldown', cooldown);
     fd.append('volume', volume); fd.append('subs_only', subs_only ? '1' : '0');
+    fd.append('vips_only', vips_only ? '1' : '0');
     fd.append('password', PASSWORD); fd.append('file', file);
     const r = await fetch(`${BASE}/api/sounds`, { method: 'POST', body: fd });
     if (!r.ok) { showToast('Error al subir', true); return; }
@@ -667,7 +698,7 @@ async function saveEdit() {
   } else {
     await fetch(`${BASE}/api/sounds/${id}`, {
       method: 'PUT', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ command: cmd, cooldown, volume, subs_only, password: PASSWORD })
+      body: JSON.stringify({ command: cmd, cooldown, volume, subs_only, vips_only, password: PASSWORD })
     });
   }
   closeModal(); showToast('Guardado'); loadSounds();
