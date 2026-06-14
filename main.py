@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import json
 import os
 import time
@@ -8,7 +8,7 @@ import websockets
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from supabase import create_client
 
@@ -17,6 +17,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 KICK_CHANNEL = os.getenv("KICK_CHANNEL", "tutomanx")
 KICK_CHATROOM_ID = os.getenv("KICK_CHATROOM_ID", "")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "cambiar123")
+MOD_PASSWORD = os.getenv("MOD_PASSWORD", "mod123")
 APP_URL = os.getenv("APP_URL", "")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
@@ -28,6 +29,23 @@ obs_connections: set[WebSocket] = set()
 cooldowns: dict[str, float] = {}
 
 
+def get_role(password: str) -> str | None:
+    if password == ADMIN_PASSWORD:
+        return "admin"
+    if password == MOD_PASSWORD:
+        return "mod"
+    return None
+
+
+def require_role(password: str, min_role: str = "mod") -> str:
+    role = get_role(password)
+    if role is None:
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+    if min_role == "admin" and role != "admin":
+        raise HTTPException(status_code=403, detail="Solo el admin puede hacer esto")
+    return role
+
+
 async def get_chatroom_id(channel: str) -> int:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
@@ -36,7 +54,6 @@ async def get_chatroom_id(channel: str) -> int:
         "Referer": "https://kick.com/",
         "Origin": "https://kick.com",
     }
-    # Try v2 first, fallback to v1
     async with httpx.AsyncClient(follow_redirects=True) as client:
         for url in [
             f"https://kick.com/api/v2/channels/{channel}",
@@ -45,8 +62,7 @@ async def get_chatroom_id(channel: str) -> int:
             try:
                 r = await client.get(url, headers=headers, timeout=15)
                 if r.status_code == 200:
-                    data = r.json()
-                    return data["chatroom"]["id"]
+                    return r.json()["chatroom"]["id"]
             except Exception:
                 continue
     raise RuntimeError(f"No se pudo obtener chatroom ID para {channel}")
@@ -67,7 +83,6 @@ async def handle_command(content: str):
     if not content.startswith("!"):
         return
 
-    # Special command: show sounds list
     if content == "!sonidos":
         result = supabase.table("sounds").select("command").eq("active", True).order("command").execute()
         commands = [s["command"] for s in result.data]
@@ -80,7 +95,12 @@ async def handle_command(content: str):
             last = cooldowns.get(sound["command"], 0)
             if time.time() - last >= sound["cooldown"]:
                 cooldowns[sound["command"]] = time.time()
-                await broadcast_obs({"type": "play", "url": sound["audio_url"], "command": sound["command"]})
+                await broadcast_obs({
+                    "type": "play",
+                    "url": sound["audio_url"],
+                    "command": sound["command"],
+                    "volume": sound.get("volume", 80)
+                })
             break
 
 
@@ -89,10 +109,7 @@ async def kick_bot():
     while True:
         try:
             print(f"[Bot] Conectando al chat de {KICK_CHANNEL}...")
-            if KICK_CHATROOM_ID:
-                chatroom_id = int(KICK_CHATROOM_ID)
-            else:
-                chatroom_id = await get_chatroom_id(KICK_CHANNEL)
+            chatroom_id = int(KICK_CHATROOM_ID) if KICK_CHATROOM_ID else await get_chatroom_id(KICK_CHANNEL)
             print(f"[Bot] Chatroom ID: {chatroom_id}")
 
             async with websockets.connect(pusher_url) as ws:
@@ -100,7 +117,7 @@ async def kick_bot():
                     "event": "pusher:subscribe",
                     "data": {"auth": "", "channel": f"chatrooms.{chatroom_id}.v2"}
                 }))
-                print(f"[Bot] Escuchando chat...")
+                print("[Bot] Escuchando chat...")
 
                 async for raw in ws:
                     msg = json.loads(raw)
@@ -108,11 +125,10 @@ async def kick_bot():
                         await ws.send(json.dumps({"event": "pusher:pong", "data": {}}))
                     elif msg.get("event") == "App\\Events\\ChatMessageEvent":
                         data = json.loads(msg["data"])
-                        content = data.get("content", "")
-                        asyncio.create_task(handle_command(content))
+                        asyncio.create_task(handle_command(data.get("content", "")))
 
         except Exception as e:
-            print(f"[Bot] Error: {e} â€” reconectando en 5s...")
+            print(f"[Bot] Error: {e} — reconectando en 5s...")
             await asyncio.sleep(5)
 
 
@@ -168,11 +184,15 @@ async def websocket_endpoint(websocket: WebSocket):
         obs_connections.discard(websocket)
 
 
-# â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── API ──────────────────────────────────────────────────────────────────────
 
-def auth(password: str):
-    if password != ADMIN_PASSWORD:
-        raise HTTPException(status_code=401, detail="ContraseÃ±a incorrecta")
+@app.post("/api/auth")
+async def auth_endpoint(request: Request):
+    body = await request.json()
+    role = get_role(body.get("password", ""))
+    if not role:
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+    return {"role": role}
 
 
 @app.get("/api/sounds")
@@ -185,18 +205,32 @@ async def list_sounds():
 async def create_sound(
     command: str = Form(...),
     cooldown: int = Form(10),
+    volume: int = Form(80),
     password: str = Form(...),
     file: UploadFile = File(...),
 ):
-    auth(password)
+    require_role(password, "mod")
+
     command = command.strip().lower()
     if not command.startswith("!"):
         command = "!" + command
 
-    file_bytes = await file.read()
-    ext = file.filename.rsplit(".", 1)[-1]
-    filename = f"{command[1:]}_{int(time.time())}.{ext}"
+    if len(command) < 2:
+        raise HTTPException(status_code=400, detail="El comando es demasiado corto")
 
+    allowed_ext = {"mp3", "wav", "ogg", "m4a"}
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in allowed_ext:
+        raise HTTPException(status_code=400, detail="Formato no permitido. Usa mp3, wav u ogg")
+
+    volume = max(0, min(100, volume))
+    cooldown = max(0, min(300, cooldown))
+
+    file_bytes = await file.read()
+    if len(file_bytes) > 20 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="El archivo no puede superar 20 MB")
+
+    filename = f"{command[1:]}_{int(time.time())}.{ext}"
     supabase.storage.from_("audios").upload(
         filename, file_bytes, {"content-type": file.content_type or "audio/mpeg"}
     )
@@ -205,12 +239,14 @@ async def create_sound(
     existing = supabase.table("sounds").select("id").eq("command", command).execute()
     if existing.data:
         result = supabase.table("sounds").update({
-            "filename": file.filename, "audio_url": audio_url, "cooldown": cooldown, "active": True
+            "filename": file.filename, "audio_url": audio_url,
+            "cooldown": cooldown, "volume": volume, "active": True
         }).eq("command", command).execute()
     else:
         result = supabase.table("sounds").insert({
             "command": command, "filename": file.filename,
-            "audio_url": audio_url, "cooldown": cooldown, "active": True
+            "audio_url": audio_url, "cooldown": cooldown,
+            "volume": volume, "active": True
         }).execute()
 
     return result.data[0]
@@ -219,19 +255,17 @@ async def create_sound(
 @app.put("/api/sounds/{sound_id}")
 async def update_sound(sound_id: int, request: Request):
     body = await request.json()
-    auth(body.pop("password", ""))
+    require_role(body.pop("password", ""), "mod")
     result = supabase.table("sounds").update(body).eq("id", sound_id).execute()
     return result.data[0]
 
 
 @app.delete("/api/sounds/{sound_id}")
 async def delete_sound(sound_id: int, password: str):
-    auth(password)
-    # Get filename to delete from storage
+    require_role(password, "admin")
     row = supabase.table("sounds").select("audio_url").eq("id", sound_id).execute()
     if row.data:
-        url = row.data[0]["audio_url"]
-        filename = url.split("/")[-1]
+        filename = row.data[0]["audio_url"].split("/")[-1]
         try:
             supabase.storage.from_("audios").remove([filename])
         except Exception:
@@ -243,11 +277,15 @@ async def delete_sound(sound_id: int, password: str):
 @app.post("/api/test/{sound_id}")
 async def test_sound(sound_id: int, request: Request):
     body = await request.json()
-    auth(body.get("password", ""))
+    require_role(body.get("password", ""), "mod")
     row = supabase.table("sounds").select("*").eq("id", sound_id).execute()
     if not row.data:
         raise HTTPException(status_code=404)
     sound = row.data[0]
-    await broadcast_obs({"type": "play", "url": sound["audio_url"], "command": sound["command"]})
+    await broadcast_obs({
+        "type": "play",
+        "url": sound["audio_url"],
+        "command": sound["command"],
+        "volume": sound.get("volume", 80)
+    })
     return {"ok": True}
-

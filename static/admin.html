@@ -3,224 +3,311 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bot Kick Audios — Admin</title>
+<title>Bot Kick Audios</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; }
+:root {
+  --green: #53fc18;
+  --green-dim: rgba(83,252,24,0.12);
+  --red: #ff4d4d;
+  --blue: #4d9fff;
+  --bg: #0a0a0a;
+  --surface: #111;
+  --surface2: #181818;
+  --border: #222;
+  --text: #e0e0e0;
+  --muted: #666;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  header {
-    background: #1a1a2e;
-    border-bottom: 2px solid #53fc18;
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  header h1 { font-size: 1.3rem; color: #53fc18; }
-  header span { color: #888; font-size: 0.85rem; }
+/* ── LOGIN ── */
+#login-screen {
+  display: flex; align-items: center; justify-content: center; min-height: 100vh;
+  background: radial-gradient(ellipse at center, #0d1f0d 0%, #0a0a0a 70%);
+}
+.login-card {
+  background: var(--surface); border: 1px solid #1f3a1f;
+  border-radius: 20px; padding: 48px 40px; width: 360px; text-align: center;
+  box-shadow: 0 0 60px rgba(83,252,24,0.08);
+}
+.login-logo { font-size: 2.5rem; margin-bottom: 8px; }
+.login-card h2 { font-size: 1.4rem; margin-bottom: 4px; }
+.login-card p { color: var(--muted); font-size: 0.85rem; margin-bottom: 32px; }
+.input-wrap { position: relative; margin-bottom: 14px; }
+.input-wrap input {
+  width: 100%; padding: 12px 16px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+}
+.input-wrap input:focus { border-color: var(--green); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 11px 20px; border: none; border-radius: 10px; cursor: pointer;
+  font-size: 0.88rem; font-weight: 600; transition: opacity 0.15s, transform 0.1s;
+}
+.btn:hover { opacity: 0.88; }
+.btn:active { transform: scale(0.97); }
+.btn-green { background: var(--green); color: #000; }
+.btn-red { background: var(--red); color: #fff; }
+.btn-blue { background: var(--blue); color: #fff; }
+.btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-full { width: 100%; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.error-msg { color: var(--red); font-size: 0.82rem; margin-top: 10px; min-height: 18px; }
+.role-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+}
+.role-admin { background: rgba(83,252,24,0.15); color: var(--green); border: 1px solid rgba(83,252,24,0.3); }
+.role-mod { background: rgba(77,159,255,0.15); color: var(--blue); border: 1px solid rgba(77,159,255,0.3); }
 
-  .container { max-width: 900px; margin: 0 auto; padding: 32px 16px; }
+/* ── HEADER ── */
+header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 16px;
+  position: sticky; top: 0; z-index: 50;
+}
+.logo { font-size: 1.1rem; font-weight: 700; color: var(--green); flex-shrink: 0; }
+.channel-tag { color: var(--muted); font-size: 0.82rem; }
+.spacer { flex: 1; }
+.vol-wrap { display: flex; align-items: center; gap: 10px; }
+.vol-wrap label { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.vol-slider {
+  -webkit-appearance: none; width: 110px; height: 4px;
+  background: linear-gradient(to right, var(--green) 0%, var(--green) var(--val, 80%), #333 var(--val, 80%), #333 100%);
+  border-radius: 4px; outline: none; cursor: pointer;
+}
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  background: var(--green); border-radius: 50%; cursor: pointer;
+}
+.vol-pct { font-size: 0.8rem; color: var(--green); width: 32px; text-align: right; }
+.logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+.logout-btn:hover { border-color: var(--red); color: var(--red); }
 
-  /* Login */
-  #login-screen {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 80vh;
-  }
-  .login-box {
-    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
-    padding: 40px; width: 320px; text-align: center;
-  }
-  .login-box h2 { margin-bottom: 8px; color: #53fc18; }
-  .login-box p { color: #888; margin-bottom: 24px; font-size: 0.9rem; }
+/* ── LAYOUT ── */
+.container { max-width: 960px; margin: 0 auto; padding: 28px 16px; }
 
-  input[type=text], input[type=password], input[type=number], input[type=file], select {
-    width: 100%; padding: 10px 14px; background: #111; border: 1px solid #333;
-    border-radius: 8px; color: #e0e0e0; font-size: 0.95rem; outline: none;
-    transition: border-color 0.2s;
-  }
-  input:focus, select:focus { border-color: #53fc18; }
-  input[type=file] { padding: 8px; cursor: pointer; }
+/* ── OBS URL BANNER ── */
+.obs-banner {
+  background: var(--green-dim); border: 1px solid rgba(83,252,24,0.25);
+  border-radius: 12px; padding: 12px 18px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.obs-banner label { font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 2px; }
+.obs-url { font-family: monospace; color: var(--green); font-size: 0.85rem; }
 
-  .btn {
-    padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
-    font-size: 0.9rem; font-weight: 600; transition: opacity 0.15s;
-  }
-  .btn:hover { opacity: 0.85; }
-  .btn-green { background: #53fc18; color: #000; }
-  .btn-red { background: #e74c3c; color: #fff; }
-  .btn-gray { background: #333; color: #e0e0e0; }
-  .btn-blue { background: #3498db; color: #fff; }
-  .btn-full { width: 100%; margin-top: 12px; }
+/* ── CARD ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 0.95rem; font-weight: 700; color: var(--green); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
 
-  /* Add sound card */
-  .card {
-    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
-    padding: 24px; margin-bottom: 24px;
-  }
-  .card h2 { font-size: 1rem; margin-bottom: 16px; color: #53fc18; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-  .form-row.three { grid-template-columns: 2fr 1fr 1fr; }
-  label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 4px; }
+/* ── FORM ── */
+.form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.field label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; }
+.field input[type=text], .field input[type=number] {
+  width: 100%; padding: 10px 12px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--green); }
+.field input.error { border-color: var(--red); }
+.field-error { color: var(--red); font-size: 0.75rem; margin-top: 3px; }
+.file-drop {
+  border: 2px dashed var(--border); border-radius: 10px; padding: 20px;
+  text-align: center; cursor: pointer; transition: all 0.2s; position: relative; margin-bottom: 14px;
+}
+.file-drop:hover, .file-drop.over { border-color: var(--green); background: var(--green-dim); }
+.file-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.file-drop-icon { font-size: 1.5rem; margin-bottom: 4px; }
+.file-drop p { font-size: 0.82rem; color: var(--muted); }
+.file-drop .file-chosen { color: var(--green); font-size: 0.85rem; font-weight: 600; }
+.vol-field { display: flex; flex-direction: column; gap: 6px; }
+.vol-field label { font-size: 0.75rem; color: var(--muted); }
+.vol-row { display: flex; align-items: center; gap: 10px; }
+.vol-field .vol-slider { width: 100%; }
+.form-footer { display: flex; align-items: center; gap: 10px; }
 
-  /* Sounds table */
-  .sounds-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 16px;
-  }
-  .sounds-header h2 { color: #53fc18; }
-  .count { background: #53fc18; color: #000; border-radius: 20px; padding: 2px 10px; font-size: 0.8rem; font-weight: 700; }
+/* ── TABLE ── */
+.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.count-badge { background: var(--green); color: #000; border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; }
+.search-input {
+  padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 0.85rem; outline: none; width: 200px; transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--green); }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 8px 12px; font-size: 0.75rem; color: var(--muted); border-bottom: 1px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 1px solid #151515; vertical-align: middle; }
+tr:hover td { background: #131313; }
+.cmd { font-family: monospace; background: var(--green-dim); color: var(--green); padding: 3px 8px; border-radius: 5px; font-size: 0.85rem; }
+.filename { color: var(--muted); font-size: 0.8rem; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toggle { position: relative; width: 38px; height: 20px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background: #333; border-radius: 20px; transition: .25s; }
+.slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #666; border-radius: 50%; transition: .25s; }
+input:checked + .slider { background: rgba(83,252,24,0.3); }
+input:checked + .slider:before { transform: translateX(18px); background: var(--green); }
+.row-vol { display: flex; align-items: center; gap: 6px; }
+.row-vol input[type=range] {
+  -webkit-appearance: none; width: 70px; height: 3px;
+  background: linear-gradient(to right, var(--green) 0%, var(--green) var(--val, 80%), #333 var(--val, 80%), #333 100%);
+  border-radius: 3px; outline: none; cursor: pointer;
+}
+.row-vol input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: var(--green); border-radius: 50%; cursor: pointer; }
+.row-vol span { font-size: 0.75rem; color: var(--muted); width: 28px; }
+.actions { display: flex; gap: 5px; }
+.btn-sm { padding: 5px 10px; font-size: 0.78rem; border-radius: 7px; }
+.empty-state { text-align: center; padding: 48px; color: var(--muted); }
+.empty-state .icon { font-size: 2rem; margin-bottom: 8px; }
 
-  table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; padding: 10px 12px; font-size: 0.8rem; color: #888; border-bottom: 1px solid #222; }
-  td { padding: 12px; border-bottom: 1px solid #1a1a1a; font-size: 0.9rem; vertical-align: middle; }
-  tr:hover td { background: #161616; }
+/* ── MODAL ── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+.overlay.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 420px; max-width: 95vw; }
+.modal h3 { margin-bottom: 20px; color: var(--green); }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 
-  .cmd { font-family: monospace; background: #111; padding: 3px 8px; border-radius: 4px; color: #53fc18; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-  .badge-on { background: #1a3a1a; color: #53fc18; }
-  .badge-off { background: #2a1a1a; color: #e74c3c; }
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; min-width: 200px;
+  padding: 12px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 500;
+  opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #0d2a0d; border: 1px solid var(--green); color: var(--green); }
+.toast.fail { background: #2a0d0d; border: 1px solid var(--red); color: var(--red); }
 
-  .actions { display: flex; gap: 6px; }
-  .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; }
-
-  /* Toggle switch */
-  .toggle { position: relative; width: 40px; height: 22px; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute; cursor: pointer; inset: 0;
-    background: #333; border-radius: 22px; transition: .3s;
-  }
-  .slider:before {
-    content: ""; position: absolute; height: 16px; width: 16px;
-    left: 3px; bottom: 3px; background: white;
-    border-radius: 50%; transition: .3s;
-  }
-  input:checked + .slider { background: #53fc18; }
-  input:checked + .slider:before { transform: translateX(18px); background: #000; }
-
-  /* Edit modal */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7); z-index: 100;
-    align-items: center; justify-content: center;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
-    padding: 28px; width: 400px; max-width: 95vw;
-  }
-  .modal h3 { margin-bottom: 20px; color: #53fc18; }
-  .modal-footer { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
-
-  .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: #1a3a1a; border: 1px solid #53fc18; color: #53fc18;
-    padding: 12px 20px; border-radius: 8px; font-size: 0.9rem;
-    opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999;
-  }
-  .toast.error { background: #3a1a1a; border-color: #e74c3c; color: #e74c3c; }
-  .toast.show { opacity: 1; }
-
-  .empty { text-align: center; padding: 40px; color: #555; }
-  .file-name { font-size: 0.8rem; color: #888; margin-top: 4px; }
-
-  .obs-box {
-    background: #0a1a0a; border: 1px dashed #53fc18; border-radius: 8px;
-    padding: 12px 16px; margin-bottom: 24px; display: flex;
-    align-items: center; justify-content: space-between; gap: 12px;
-  }
-  .obs-url { font-family: monospace; color: #53fc18; font-size: 0.85rem; word-break: break-all; }
-  .obs-box label { font-size: 0.75rem; color: #888; display: block; margin-bottom: 4px; }
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  header { padding: 0 16px; }
+  .vol-wrap { display: none; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>🎵 Bot Kick Audios</h1>
-  <span>Panel de administración — kick.com/tutomanx</span>
-</header>
-
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-box">
-    <h2>Acceso Admin</h2>
-    <p>Ingresa tu contraseña para gestionar los sonidos</p>
-    <div style="margin-bottom:12px">
-      <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()">
+  <div class="login-card">
+    <div class="login-logo">🎵</div>
+    <h2>Bot Kick Audios</h2>
+    <p>Panel de administración</p>
+    <div class="input-wrap">
+      <input type="password" id="pwd" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <button class="btn btn-green btn-full" onclick="login()">Entrar</button>
-    <p id="login-err" style="color:#e74c3c;margin-top:12px;font-size:0.85rem;display:none">Contraseña incorrecta</p>
+    <button class="btn btn-green btn-full" onclick="doLogin()">Entrar</button>
+    <div class="error-msg" id="login-err"></div>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app" style="display:none">
-<div class="container">
-
-  <!-- OBS URL hint -->
-  <div class="obs-box">
-    <div>
-      <label>URL para OBS Browser Source</label>
-      <span class="obs-url" id="obs-url"></span>
+  <header>
+    <span class="logo">🎵 Bot Kick</span>
+    <span class="channel-tag">kick.com/tutomanx</span>
+    <span id="role-badge" class="role-badge"></span>
+    <div class="spacer"></div>
+    <div class="vol-wrap">
+      <label>Volumen global</label>
+      <input type="range" class="vol-slider" id="global-vol" min="0" max="100" value="80"
+        oninput="updateGlobalVol(this.value)" style="--val:80%">
+      <span class="vol-pct" id="global-vol-pct">80%</span>
     </div>
-    <button class="btn btn-gray btn-sm" onclick="copyObs()">Copiar</button>
-  </div>
+    <button class="logout-btn" onclick="logout()">Salir</button>
+  </header>
 
-  <!-- ADD SOUND -->
-  <div class="card">
-    <h2>+ Agregar nuevo sonido</h2>
-    <div class="form-row three">
-      <div>
-        <label>Comando (ej: !correp3rr4)</label>
-        <input type="text" id="new-cmd" placeholder="!misonido">
+  <div class="container">
+
+    <!-- OBS Banner -->
+    <div class="obs-banner">
+      <div style="flex:1">
+        <label>URL para OBS Browser Source</label>
+        <span class="obs-url" id="obs-url"></span>
       </div>
-      <div>
-        <label>Cooldown (segundos)</label>
-        <input type="number" id="new-cooldown" value="10" min="0" max="300">
+      <button class="btn btn-ghost btn-sm" onclick="copyObs()">📋 Copiar</button>
+    </div>
+
+    <!-- Agregar sonido -->
+    <div class="card" id="add-card">
+      <div class="card-title">+ Agregar nuevo sonido</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Comando <span style="color:var(--red)">*</span></label>
+          <input type="text" id="new-cmd" placeholder="!misonido" oninput="clearFieldError('new-cmd')">
+          <div class="field-error" id="err-cmd"></div>
+        </div>
+        <div class="field">
+          <label>Cooldown (seg)</label>
+          <input type="number" id="new-cooldown" value="10" min="0" max="300">
+        </div>
+        <div class="vol-field field">
+          <label>Volumen del sonido</label>
+          <div class="vol-row">
+            <input type="range" class="vol-slider" id="new-vol" min="0" max="100" value="80"
+              oninput="syncVolLabel('new-vol','new-vol-pct')" style="--val:80%">
+            <span class="vol-pct" id="new-vol-pct">80%</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-drop" id="drop-zone"
+        ondragover="event.preventDefault();this.classList.add('over')"
+        ondragleave="this.classList.remove('over')"
+        ondrop="handleDrop(event)">
+        <input type="file" id="new-file" accept="audio/*" onchange="onFileChange(this)">
+        <div class="file-drop-icon">🎵</div>
+        <p>Arrastra un archivo de audio o haz click para seleccionar</p>
+        <p style="margin-top:4px;font-size:0.75rem">MP3, WAV, OGG — máx. 20 MB</p>
+        <div class="file-chosen" id="file-chosen" style="display:none"></div>
+      </div>
+      <div class="field-error" id="err-file" style="margin-bottom:10px"></div>
+      <div class="form-footer">
+        <button class="btn btn-green" id="add-btn" onclick="addSound()">Subir sonido</button>
+        <span id="add-status" style="font-size:0.82rem;color:var(--muted)"></span>
       </div>
     </div>
-    <div style="margin-bottom:12px">
-      <label>Archivo de audio (.mp3, .wav, .ogg)</label>
-      <input type="file" id="new-file" accept="audio/*" onchange="showFileName(this)">
-      <div class="file-name" id="file-name-preview"></div>
+
+    <!-- Lista de sonidos -->
+    <div class="card">
+      <div class="table-header">
+        <div class="card-title" style="margin:0">Sonidos configurados <span class="count-badge" id="count">0</span></div>
+        <input type="text" class="search-input" placeholder="🔍 Buscar..." oninput="filterTable(this.value)">
+      </div>
+      <div id="sounds-container"><div class="empty-state"><div class="icon">🎵</div>Cargando...</div></div>
     </div>
-    <button class="btn btn-green" onclick="addSound()" id="add-btn">Subir sonido</button>
+
   </div>
-
-  <!-- SOUNDS LIST -->
-  <div class="card">
-    <div class="sounds-header">
-      <h2>Sonidos configurados</h2>
-      <span class="count" id="total-count">0</span>
-    </div>
-
-    <div id="sounds-container">
-      <div class="empty">Cargando sonidos...</div>
-    </div>
-  </div>
-
-</div>
 </div>
 
 <!-- EDIT MODAL -->
-<div class="modal-overlay" id="modal">
+<div class="overlay" id="modal">
   <div class="modal">
     <h3>Editar sonido</h3>
     <input type="hidden" id="edit-id">
-    <div style="margin-bottom:12px">
+    <div class="field" style="margin-bottom:14px">
       <label>Comando</label>
       <input type="text" id="edit-cmd">
     </div>
-    <div style="margin-bottom:12px">
-      <label>Cooldown (segundos)</label>
-      <input type="number" id="edit-cooldown" min="0" max="300">
+    <div class="form-grid-2" style="margin-bottom:14px">
+      <div class="field">
+        <label>Cooldown (seg)</label>
+        <input type="number" id="edit-cooldown" min="0" max="300">
+      </div>
+      <div class="vol-field field">
+        <label>Volumen</label>
+        <div class="vol-row">
+          <input type="range" class="vol-slider" id="edit-vol" min="0" max="100"
+            oninput="syncVolLabel('edit-vol','edit-vol-pct')" style="--val:80%">
+          <span class="vol-pct" id="edit-vol-pct">80%</span>
+        </div>
+      </div>
     </div>
-    <div style="margin-bottom:12px">
+    <div class="field" style="margin-bottom:4px">
       <label>Reemplazar audio (opcional)</label>
-      <input type="file" id="edit-file" accept="audio/*">
+      <input type="file" id="edit-file" accept="audio/*"
+        style="width:100%;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)">
     </div>
     <div class="modal-footer">
-      <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-green" onclick="saveEdit()">Guardar</button>
     </div>
   </div>
@@ -229,128 +316,219 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const BASE = window.location.origin;
+const BASE = location.origin;
 let PASSWORD = '';
+let ROLE = '';
+let ALL_SOUNDS = [];
 
-function login() {
-  const p = document.getElementById('pwd-input').value;
-  fetch(`${BASE}/api/sounds`, {
-    headers: { 'X-Test': '1' }
-  }).then(async () => {
-    // validate password by doing a test
-    const fd = new FormData();
-    fd.append('password', p);
-    fd.append('command', '!test_auth_' + Date.now());
-    fd.append('cooldown', '999999');
-    // Actually just check locally; real auth happens server side
-    // Simple check: try listing sounds (no auth needed), then set password
-    PASSWORD = p;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('obs-url').textContent = `${BASE}/obs`;
-    loadSounds();
+async function doLogin() {
+  const pwd = document.getElementById('pwd').value.trim();
+  if (!pwd) { document.getElementById('login-err').textContent = 'Escribe tu contraseña'; return; }
+  const res = await fetch(`${BASE}/api/auth`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ password: pwd })
   });
+  if (!res.ok) { document.getElementById('login-err').textContent = 'Contraseña incorrecta'; return; }
+  const data = await res.json();
+  PASSWORD = pwd;
+  ROLE = data.role;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('obs-url').textContent = `${BASE}/obs`;
+  const badge = document.getElementById('role-badge');
+  badge.textContent = ROLE === 'admin' ? '👑 Admin' : '🛡️ Moderador';
+  badge.className = `role-badge ${ROLE === 'admin' ? 'role-admin' : 'role-mod'}`;
+  if (ROLE !== 'admin') document.getElementById('add-card').style.display = 'none'; // mods can add too
+  loadSounds();
 }
 
-function showFileName(input) {
-  const el = document.getElementById('file-name-preview');
-  el.textContent = input.files[0] ? input.files[0].name : '';
+function logout() {
+  PASSWORD = ''; ROLE = '';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pwd').value = '';
+  document.getElementById('login-err').textContent = '';
 }
 
+// ── VOLUME ──
+function syncVolLabel(sliderId, labelId) {
+  const val = document.getElementById(sliderId).value;
+  document.getElementById(labelId).textContent = val + '%';
+  document.getElementById(sliderId).style.setProperty('--val', val + '%');
+}
+
+function updateGlobalVol(val) {
+  document.getElementById('global-vol-pct').textContent = val + '%';
+  document.getElementById('global-vol').style.setProperty('--val', val + '%');
+  // Store in localStorage so OBS remembers
+  localStorage.setItem('globalVol', val);
+  // Broadcast to OBS (via a hidden iframe ping is not needed — just store and OBS reads it)
+}
+
+// ── FILE DROP ──
+function onFileChange(input) {
+  const f = input.files[0];
+  if (f) {
+    document.getElementById('file-chosen').textContent = '✓ ' + f.name;
+    document.getElementById('file-chosen').style.display = 'block';
+    document.getElementById('drop-zone').querySelector('p').style.display = 'none';
+    clearFieldError('err-file');
+  }
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) {
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    document.getElementById('new-file').files = dt.files;
+    onFileChange(document.getElementById('new-file'));
+  }
+}
+
+// ── VALIDATION ──
+function clearFieldError(id) { document.getElementById('err-' + id.replace('new-','')).textContent = ''; document.getElementById(id).classList.remove('error'); }
+function setFieldError(inputId, errId, msg) {
+  document.getElementById(errId).textContent = msg;
+  document.getElementById(inputId)?.classList.add('error');
+}
+
+function validateAddForm() {
+  let ok = true;
+  const cmd = document.getElementById('new-cmd').value.trim();
+  const file = document.getElementById('new-file').files[0];
+  if (!cmd) { setFieldError('new-cmd', 'err-cmd', 'El comando es obligatorio'); ok = false; }
+  else if (cmd.length < 2) { setFieldError('new-cmd', 'err-cmd', 'Mínimo 2 caracteres'); ok = false; }
+  if (!file) { document.getElementById('err-file').textContent = 'Selecciona un archivo de audio'; ok = false; }
+  else {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['mp3','wav','ogg','m4a'].includes(ext)) { document.getElementById('err-file').textContent = 'Solo MP3, WAV u OGG'; ok = false; }
+    if (file.size > 20*1024*1024) { document.getElementById('err-file').textContent = 'Máximo 20 MB'; ok = false; }
+  }
+  return ok;
+}
+
+// ── SOUNDS ──
 async function loadSounds() {
   const res = await fetch(`${BASE}/api/sounds`);
-  const sounds = await res.json();
-  document.getElementById('total-count').textContent = sounds.length;
+  ALL_SOUNDS = await res.json();
+  renderTable(ALL_SOUNDS);
+}
 
-  const container = document.getElementById('sounds-container');
+function renderTable(sounds) {
+  document.getElementById('count').textContent = sounds.length;
+  const el = document.getElementById('sounds-container');
   if (!sounds.length) {
-    container.innerHTML = '<div class="empty">No hay sonidos. Agrega el primero arriba.</div>';
+    el.innerHTML = '<div class="empty-state"><div class="icon">🎵</div>No hay sonidos todavía. ¡Agrega el primero!</div>';
     return;
   }
+  const isAdmin = ROLE === 'admin';
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th>Comando</th><th>Archivo</th><th>Cooldown</th><th>Volumen</th><th>Activo</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>
+    ${sounds.map(s => {
+      const vol = s.volume ?? 80;
+      return `<tr data-id="${s.id}">
+        <td><span class="cmd">${s.command}</span></td>
+        <td><span class="filename" title="${s.filename}">${s.filename}</span></td>
+        <td>${s.cooldown}s</td>
+        <td>
+          <div class="row-vol">
+            <input type="range" min="0" max="100" value="${vol}"
+              style="--val:${vol}%"
+              oninput="onRowVolChange(this,${s.id})"
+              onchange="saveVolume(${s.id}, this.value)">
+            <span>${vol}%</span>
+          </div>
+        </td>
+        <td>
+          <label class="toggle">
+            <input type="checkbox" ${s.active ? 'checked' : ''} onchange="toggleActive(${s.id},this.checked)">
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-blue btn-sm" onclick="testSound(${s.id})" title="Probar">▶</button>
+            <button class="btn btn-ghost btn-sm" onclick="openEdit(${s.id})">✏️</button>
+            ${isAdmin ? `<button class="btn btn-red btn-sm" onclick="deleteSound(${s.id},'${s.command}')">✕</button>` : ''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
 
-  container.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Comando</th>
-          <th>Archivo</th>
-          <th>Cooldown</th>
-          <th>Activo</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${sounds.map(s => `
-          <tr>
-            <td><span class="cmd">${s.command}</span></td>
-            <td style="color:#888;font-size:0.85rem">${s.filename}</td>
-            <td>${s.cooldown}s</td>
-            <td>
-              <label class="toggle">
-                <input type="checkbox" ${s.active ? 'checked' : ''}
-                  onchange="toggleActive(${s.id}, this.checked)">
-                <span class="slider"></span>
-              </label>
-            </td>
-            <td>
-              <div class="actions">
-                <button class="btn btn-blue btn-sm" onclick="testSound(${s.id})" title="Probar en OBS">▶</button>
-                <button class="btn btn-gray btn-sm" onclick="openEdit(${s.id}, '${s.command}', ${s.cooldown})">Editar</button>
-                <button class="btn btn-red btn-sm" onclick="deleteSound(${s.id}, '${s.command}')">✕</button>
-              </div>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
+function filterTable(q) {
+  const filtered = ALL_SOUNDS.filter(s =>
+    s.command.toLowerCase().includes(q.toLowerCase()) ||
+    s.filename.toLowerCase().includes(q.toLowerCase())
+  );
+  renderTable(filtered);
+}
+
+function onRowVolChange(input, id) {
+  const val = input.value;
+  input.style.setProperty('--val', val + '%');
+  input.closest('td').querySelector('span').textContent = val + '%';
+}
+
+async function saveVolume(id, vol) {
+  await fetch(`${BASE}/api/sounds/${id}`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ volume: parseInt(vol), password: PASSWORD })
+  });
+  const s = ALL_SOUNDS.find(x => x.id === id);
+  if (s) s.volume = parseInt(vol);
+  showToast('Volumen guardado');
 }
 
 async function addSound() {
-  const cmd = document.getElementById('new-cmd').value.trim();
-  const cooldown = document.getElementById('new-cooldown').value;
-  const file = document.getElementById('new-file').files[0];
-
-  if (!cmd) return showToast('Escribe un comando', true);
-  if (!file) return showToast('Selecciona un archivo de audio', true);
-
+  if (!validateAddForm()) return;
   const btn = document.getElementById('add-btn');
-  btn.textContent = 'Subiendo...';
-  btn.disabled = true;
+  const status = document.getElementById('add-status');
+  btn.disabled = true; btn.textContent = 'Subiendo...';
+  status.textContent = '';
 
   const fd = new FormData();
-  fd.append('command', cmd);
-  fd.append('cooldown', cooldown);
+  fd.append('command', document.getElementById('new-cmd').value.trim());
+  fd.append('cooldown', document.getElementById('new-cooldown').value);
+  fd.append('volume', document.getElementById('new-vol').value);
   fd.append('password', PASSWORD);
-  fd.append('file', file);
+  fd.append('file', document.getElementById('new-file').files[0]);
 
   const res = await fetch(`${BASE}/api/sounds`, { method: 'POST', body: fd });
-  btn.textContent = 'Subir sonido';
-  btn.disabled = false;
+  btn.disabled = false; btn.textContent = 'Subir sonido';
 
   if (res.ok) {
-    showToast('Sonido agregado exitosamente');
+    showToast('Sonido agregado');
     document.getElementById('new-cmd').value = '';
     document.getElementById('new-file').value = '';
-    document.getElementById('file-name-preview').textContent = '';
+    document.getElementById('file-chosen').style.display = 'none';
+    document.getElementById('drop-zone').querySelector('p').style.display = 'block';
     loadSounds();
   } else {
     const err = await res.json();
-    showToast(err.detail || 'Error al subir', true);
+    status.textContent = err.detail || 'Error al subir';
+    status.style.color = 'var(--red)';
   }
 }
 
 async function toggleActive(id, active) {
   await fetch(`${BASE}/api/sounds/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'PUT', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ active, password: PASSWORD })
   });
-  loadSounds();
+  const s = ALL_SOUNDS.find(x => x.id === id);
+  if (s) s.active = active;
 }
 
 async function deleteSound(id, cmd) {
-  if (!confirm(`¿Eliminar ${cmd}?`)) return;
+  if (!confirm(`¿Eliminar "${cmd}"? Esta acción no se puede deshacer.`)) return;
   const res = await fetch(`${BASE}/api/sounds/${id}?password=${encodeURIComponent(PASSWORD)}`, { method: 'DELETE' });
   if (res.ok) { showToast('Sonido eliminado'); loadSounds(); }
   else showToast('Error al eliminar', true);
@@ -358,67 +536,69 @@ async function deleteSound(id, cmd) {
 
 async function testSound(id) {
   const res = await fetch(`${BASE}/api/test/${id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ password: PASSWORD })
   });
-  if (res.ok) showToast('Reproduciendo en OBS...');
-  else showToast('Abre /obs primero en OBS', true);
+  if (res.ok) showToast('▶ Reproduciendo en OBS');
+  else showToast('No hay OBS conectado', true);
 }
 
-function openEdit(id, cmd, cooldown) {
+function openEdit(id) {
+  const s = ALL_SOUNDS.find(x => x.id === id);
+  if (!s) return;
   document.getElementById('edit-id').value = id;
-  document.getElementById('edit-cmd').value = cmd;
-  document.getElementById('edit-cooldown').value = cooldown;
+  document.getElementById('edit-cmd').value = s.command;
+  document.getElementById('edit-cooldown').value = s.cooldown;
+  const vol = s.volume ?? 80;
+  document.getElementById('edit-vol').value = vol;
+  document.getElementById('edit-vol').style.setProperty('--val', vol + '%');
+  document.getElementById('edit-vol-pct').textContent = vol + '%';
   document.getElementById('edit-file').value = '';
-  document.getElementById('modal').classList.add('active');
+  document.getElementById('modal').classList.add('open');
 }
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('active');
-}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
 async function saveEdit() {
-  const id = document.getElementById('edit-id').value;
+  const id = parseInt(document.getElementById('edit-id').value);
   const cmd = document.getElementById('edit-cmd').value.trim();
   const cooldown = parseInt(document.getElementById('edit-cooldown').value);
+  const volume = parseInt(document.getElementById('edit-vol').value);
   const file = document.getElementById('edit-file').files[0];
 
+  if (!cmd) { showToast('El comando no puede estar vacío', true); return; }
+
   if (file) {
-    // Re-upload with new file
     const fd = new FormData();
     fd.append('command', cmd);
     fd.append('cooldown', cooldown);
+    fd.append('volume', volume);
     fd.append('password', PASSWORD);
     fd.append('file', file);
-    const res = await fetch(`${BASE}/api/sounds`, { method: 'POST', body: fd });
-    if (!res.ok) { showToast('Error al subir nuevo audio', true); return; }
-    // Delete old if different command
+    const r1 = await fetch(`${BASE}/api/sounds`, { method: 'POST', body: fd });
+    if (!r1.ok) { showToast('Error al subir nuevo audio', true); return; }
     await fetch(`${BASE}/api/sounds/${id}?password=${encodeURIComponent(PASSWORD)}`, { method: 'DELETE' });
   } else {
-    const res = await fetch(`${BASE}/api/sounds/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command: cmd, cooldown, password: PASSWORD })
+    await fetch(`${BASE}/api/sounds/${id}`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ command: cmd, cooldown, volume, password: PASSWORD })
     });
-    if (!res.ok) { showToast('Error al guardar', true); return; }
   }
-
   closeModal();
   showToast('Guardado');
   loadSounds();
 }
 
 function copyObs() {
-  const url = document.getElementById('obs-url').textContent;
-  navigator.clipboard.writeText(url).then(() => showToast('URL copiada'));
+  navigator.clipboard.writeText(document.getElementById('obs-url').textContent)
+    .then(() => showToast('URL copiada'));
 }
 
 function showToast(msg, error = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast' + (error ? ' error' : '') + ' show';
-  setTimeout(() => t.classList.remove('show'), 3000);
+  t.className = `toast ${error ? 'fail' : 'success'} show`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 </script>
 </body>
