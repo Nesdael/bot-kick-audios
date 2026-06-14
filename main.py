@@ -85,7 +85,7 @@ async def handle_command(content: str):
 
 
 async def kick_bot():
-    pusher_url = "wss://ws-us2.pusher.com/app/eb1d5f283081a78b932c?protocol=7&client=js&version=7.6.0&flash=false"
+    pusher_url = "wss://ws-us2.pusher.com/app/eb1d5f283081a78b932c?protocol=7&client=js&version=7.6.0&flash=false&cluster=us2"
     while True:
         try:
             print(f"[Bot] Conectando al chat de {KICK_CHANNEL}...")
