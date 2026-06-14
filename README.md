@@ -1,4 +1,5 @@
 # 🎵 Bot de Audios para Kick — TutoManX
+### v1.8.0
 
 Bot para el canal [kick.com/tutomanx](https://kick.com/tutomanx) que permite reproducir audios en el stream cuando los espectadores escriben comandos en el chat. El panel de administración permite gestionar los sonidos, y el audio se reproduce directamente en OBS usando una Browser Source.
 
@@ -37,12 +38,21 @@ Chat de Kick → Bot en Render → WebSocket → OBS Browser Source → 🔊 Aud
 - **Control de volumen por sonido** — cada audio tiene su propia barra de volumen (0–200%)
 - **Volumen global** — controla el volumen general desde el header del panel
 - **Cooldown por comando** — evita el spam configurando un tiempo mínimo entre usos
-- **Dos roles de usuario**
+- **Cooldown global por usuario** — cada espectador debe esperar 60 segundos entre cualquier sonido
+- **Dos roles de panel**
   - 👑 **TutoManX** (admin): puede subir, editar y eliminar sonidos
   - 🛡️ **Moderadores**: pueden subir y editar, pero no eliminar
+- **Roles de Kick integrados**
+  - 📡 **Broadcaster y Moderadores** — pueden usar todos los sonidos sin restricción
+  - 💎 **VIP** — acceso a sonidos de subs y sonidos VIP
+  - ⭐ **Suscriptores** — acceso a sonidos marcados como "Solo subs"
+  - 👤 **Regulares** — solo sonidos sin restricción
+- **Sonidos exclusivos** — marca sonidos como "Solo subs ⭐" o "Solo VIP 💎" desde el panel
 - **`!sonidos` en el chat** — muestra en el stream todos los comandos disponibles
+- **`!sonidosubs` en el chat** — muestra solo los sonidos exclusivos para Subs y VIP
 - **Amplificación de audio** — volumen hasta 200% usando la Web Audio API con GainNode
 - **Persistencia** — el navegador recuerda el volumen global y el usuario seleccionado
+- **Diseño TutoManX** — colores azul y dorado, fondo de circuito, favicon con logo del canal
 
 ---
 
