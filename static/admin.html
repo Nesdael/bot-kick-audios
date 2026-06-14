@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -20,7 +20,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-/* ── LOGIN ── */
+/* â”€â”€ LOGIN â”€â”€ */
 #login-screen {
   display: flex; align-items: center; justify-content: center; min-height: 100vh;
   background: radial-gradient(ellipse at center, #0d1f0d 0%, #0a0a0a 70%);
@@ -60,7 +60,7 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
 .role-admin { background: rgba(83,252,24,0.15); color: var(--green); border: 1px solid rgba(83,252,24,0.3); }
 .role-mod { background: rgba(77,159,255,0.15); color: var(--blue); border: 1px solid rgba(77,159,255,0.3); }
 
-/* ── HEADER ── */
+/* â”€â”€ HEADER â”€â”€ */
 header {
   background: var(--surface); border-bottom: 1px solid var(--border);
   padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 16px;
@@ -84,10 +84,10 @@ header {
 .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
 .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
-/* ── LAYOUT ── */
+/* â”€â”€ LAYOUT â”€â”€ */
 .container { max-width: 960px; margin: 0 auto; padding: 28px 16px; }
 
-/* ── OBS URL BANNER ── */
+/* â”€â”€ OBS URL BANNER â”€â”€ */
 .obs-banner {
   background: var(--green-dim); border: 1px solid rgba(83,252,24,0.25);
   border-radius: 12px; padding: 12px 18px; margin-bottom: 24px;
@@ -96,11 +96,11 @@ header {
 .obs-banner label { font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 2px; }
 .obs-url { font-family: monospace; color: var(--green); font-size: 0.85rem; }
 
-/* ── CARD ── */
+/* â”€â”€ CARD â”€â”€ */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
 .card-title { font-size: 0.95rem; font-weight: 700; color: var(--green); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
 
-/* ── FORM ── */
+/* â”€â”€ FORM â”€â”€ */
 .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
 .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
 .field label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; }
@@ -127,7 +127,7 @@ header {
 .vol-field .vol-slider { width: 100%; }
 .form-footer { display: flex; align-items: center; gap: 10px; }
 
-/* ── TABLE ── */
+/* â”€â”€ TABLE â”€â”€ */
 .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .count-badge { background: var(--green); color: #000; border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; }
 .search-input {
@@ -160,14 +160,14 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
 .empty-state { text-align: center; padding: 48px; color: var(--muted); }
 .empty-state .icon { font-size: 2rem; margin-bottom: 8px; }
 
-/* ── MODAL ── */
+/* â”€â”€ MODAL â”€â”€ */
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
 .overlay.open { display: flex; }
 .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; width: 420px; max-width: 95vw; }
 .modal h3 { margin-bottom: 20px; color: var(--green); }
 .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 
-/* ── TOAST ── */
+/* â”€â”€ TOAST â”€â”€ */
 .toast {
   position: fixed; bottom: 24px; right: 24px; min-width: 200px;
   padding: 12px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 500;
@@ -189,11 +189,11 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
-    <div class="login-logo">🎵</div>
+    <div class="login-logo">ðŸŽµ</div>
     <h2>Bot Kick Audios</h2>
-    <p>Panel de administración</p>
+    <p>Panel de administraciÃ³n</p>
     <div class="input-wrap">
-      <input type="password" id="pwd" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+      <input type="password" id="pwd" placeholder="ContraseÃ±a" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="btn btn-green btn-full" onclick="doLogin()">Entrar</button>
     <div class="error-msg" id="login-err"></div>
@@ -203,13 +203,13 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
 <!-- APP -->
 <div id="app" style="display:none">
   <header>
-    <span class="logo">🎵 Bot Kick</span>
+    <span class="logo">ðŸŽµ Bot Kick</span>
     <span class="channel-tag">kick.com/tutomanx</span>
     <span id="role-badge" class="role-badge"></span>
     <div class="spacer"></div>
     <div class="vol-wrap">
       <label>Volumen global</label>
-      <input type="range" class="vol-slider" id="global-vol" min="0" max="100" value="80"
+      <input type="range" class="vol-slider" id="global-vol" min="0" max="200" value="80"
         oninput="updateGlobalVol(this.value)" style="--val:80%">
       <span class="vol-pct" id="global-vol-pct">80%</span>
     </div>
@@ -224,7 +224,7 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
         <label>URL para OBS Browser Source</label>
         <span class="obs-url" id="obs-url"></span>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="copyObs()">📋 Copiar</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyObs()">ðŸ“‹ Copiar</button>
     </div>
 
     <!-- Agregar sonido -->
@@ -243,7 +243,7 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
         <div class="vol-field field">
           <label>Volumen del sonido</label>
           <div class="vol-row">
-            <input type="range" class="vol-slider" id="new-vol" min="0" max="100" value="80"
+            <input type="range" class="vol-slider" id="new-vol" min="0" max="200" value="80"
               oninput="syncVolLabel('new-vol','new-vol-pct')" style="--val:80%">
             <span class="vol-pct" id="new-vol-pct">80%</span>
           </div>
@@ -254,9 +254,9 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
         ondragleave="this.classList.remove('over')"
         ondrop="handleDrop(event)">
         <input type="file" id="new-file" accept="audio/*" onchange="onFileChange(this)">
-        <div class="file-drop-icon">🎵</div>
+        <div class="file-drop-icon">ðŸŽµ</div>
         <p>Arrastra un archivo de audio o haz click para seleccionar</p>
-        <p style="margin-top:4px;font-size:0.75rem">MP3, WAV, OGG — máx. 20 MB</p>
+        <p style="margin-top:4px;font-size:0.75rem">MP3, WAV, OGG â€” mÃ¡x. 20 MB</p>
         <div class="file-chosen" id="file-chosen" style="display:none"></div>
       </div>
       <div class="field-error" id="err-file" style="margin-bottom:10px"></div>
@@ -270,9 +270,9 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
     <div class="card">
       <div class="table-header">
         <div class="card-title" style="margin:0">Sonidos configurados <span class="count-badge" id="count">0</span></div>
-        <input type="text" class="search-input" placeholder="🔍 Buscar..." oninput="filterTable(this.value)">
+        <input type="text" class="search-input" placeholder="ðŸ” Buscar..." oninput="filterTable(this.value)">
       </div>
-      <div id="sounds-container"><div class="empty-state"><div class="icon">🎵</div>Cargando...</div></div>
+      <div id="sounds-container"><div class="empty-state"><div class="icon">ðŸŽµ</div>Cargando...</div></div>
     </div>
 
   </div>
@@ -295,7 +295,7 @@ input:checked + .slider:before { transform: translateX(18px); background: var(--
       <div class="vol-field field">
         <label>Volumen</label>
         <div class="vol-row">
-          <input type="range" class="vol-slider" id="edit-vol" min="0" max="100"
+          <input type="range" class="vol-slider" id="edit-vol" min="0" max="200"
             oninput="syncVolLabel('edit-vol','edit-vol-pct')" style="--val:80%">
           <span class="vol-pct" id="edit-vol-pct">80%</span>
         </div>
@@ -323,12 +323,12 @@ let ALL_SOUNDS = [];
 
 async function doLogin() {
   const pwd = document.getElementById('pwd').value.trim();
-  if (!pwd) { document.getElementById('login-err').textContent = 'Escribe tu contraseña'; return; }
+  if (!pwd) { document.getElementById('login-err').textContent = 'Escribe tu contraseÃ±a'; return; }
   const res = await fetch(`${BASE}/api/auth`, {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ password: pwd })
   });
-  if (!res.ok) { document.getElementById('login-err').textContent = 'Contraseña incorrecta'; return; }
+  if (!res.ok) { document.getElementById('login-err').textContent = 'ContraseÃ±a incorrecta'; return; }
   const data = await res.json();
   PASSWORD = pwd;
   ROLE = data.role;
@@ -336,7 +336,7 @@ async function doLogin() {
   document.getElementById('app').style.display = 'block';
   document.getElementById('obs-url').textContent = `${BASE}/obs`;
   const badge = document.getElementById('role-badge');
-  badge.textContent = ROLE === 'admin' ? '👑 Admin' : '🛡️ Moderador';
+  badge.textContent = ROLE === 'admin' ? 'ðŸ‘‘ Admin' : 'ðŸ›¡ï¸ Moderador';
   badge.className = `role-badge ${ROLE === 'admin' ? 'role-admin' : 'role-mod'}`;
   if (ROLE !== 'admin') document.getElementById('add-card').style.display = 'none'; // mods can add too
   loadSounds();
@@ -350,7 +350,7 @@ function logout() {
   document.getElementById('login-err').textContent = '';
 }
 
-// ── VOLUME ──
+// â”€â”€ VOLUME â”€â”€
 function syncVolLabel(sliderId, labelId) {
   const val = document.getElementById(sliderId).value;
   document.getElementById(labelId).textContent = val + '%';
@@ -362,14 +362,14 @@ function updateGlobalVol(val) {
   document.getElementById('global-vol').style.setProperty('--val', val + '%');
   // Store in localStorage so OBS remembers
   localStorage.setItem('globalVol', val);
-  // Broadcast to OBS (via a hidden iframe ping is not needed — just store and OBS reads it)
+  // Broadcast to OBS (via a hidden iframe ping is not needed â€” just store and OBS reads it)
 }
 
-// ── FILE DROP ──
+// â”€â”€ FILE DROP â”€â”€
 function onFileChange(input) {
   const f = input.files[0];
   if (f) {
-    document.getElementById('file-chosen').textContent = '✓ ' + f.name;
+    document.getElementById('file-chosen').textContent = 'âœ“ ' + f.name;
     document.getElementById('file-chosen').style.display = 'block';
     document.getElementById('drop-zone').querySelector('p').style.display = 'none';
     clearFieldError('err-file');
@@ -387,7 +387,7 @@ function handleDrop(e) {
   }
 }
 
-// ── VALIDATION ──
+// â”€â”€ VALIDATION â”€â”€
 function clearFieldError(id) { document.getElementById('err-' + id.replace('new-','')).textContent = ''; document.getElementById(id).classList.remove('error'); }
 function setFieldError(inputId, errId, msg) {
   document.getElementById(errId).textContent = msg;
@@ -399,17 +399,17 @@ function validateAddForm() {
   const cmd = document.getElementById('new-cmd').value.trim();
   const file = document.getElementById('new-file').files[0];
   if (!cmd) { setFieldError('new-cmd', 'err-cmd', 'El comando es obligatorio'); ok = false; }
-  else if (cmd.length < 2) { setFieldError('new-cmd', 'err-cmd', 'Mínimo 2 caracteres'); ok = false; }
+  else if (cmd.length < 2) { setFieldError('new-cmd', 'err-cmd', 'MÃ­nimo 2 caracteres'); ok = false; }
   if (!file) { document.getElementById('err-file').textContent = 'Selecciona un archivo de audio'; ok = false; }
   else {
     const ext = file.name.split('.').pop().toLowerCase();
     if (!['mp3','wav','ogg','m4a'].includes(ext)) { document.getElementById('err-file').textContent = 'Solo MP3, WAV u OGG'; ok = false; }
-    if (file.size > 20*1024*1024) { document.getElementById('err-file').textContent = 'Máximo 20 MB'; ok = false; }
+    if (file.size > 20*1024*1024) { document.getElementById('err-file').textContent = 'MÃ¡ximo 20 MB'; ok = false; }
   }
   return ok;
 }
 
-// ── SOUNDS ──
+// â”€â”€ SOUNDS â”€â”€
 async function loadSounds() {
   const res = await fetch(`${BASE}/api/sounds`);
   ALL_SOUNDS = await res.json();
@@ -420,7 +420,7 @@ function renderTable(sounds) {
   document.getElementById('count').textContent = sounds.length;
   const el = document.getElementById('sounds-container');
   if (!sounds.length) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">🎵</div>No hay sonidos todavía. ¡Agrega el primero!</div>';
+    el.innerHTML = '<div class="empty-state"><div class="icon">ðŸŽµ</div>No hay sonidos todavÃ­a. Â¡Agrega el primero!</div>';
     return;
   }
   const isAdmin = ROLE === 'admin';
@@ -452,9 +452,9 @@ function renderTable(sounds) {
         </td>
         <td>
           <div class="actions">
-            <button class="btn btn-blue btn-sm" onclick="testSound(${s.id})" title="Probar">▶</button>
-            <button class="btn btn-ghost btn-sm" onclick="openEdit(${s.id})">✏️</button>
-            ${isAdmin ? `<button class="btn btn-red btn-sm" onclick="deleteSound(${s.id},'${s.command}')">✕</button>` : ''}
+            <button class="btn btn-blue btn-sm" onclick="testSound(${s.id})" title="Probar">â–¶</button>
+            <button class="btn btn-ghost btn-sm" onclick="openEdit(${s.id})">âœï¸</button>
+            ${isAdmin ? `<button class="btn btn-red btn-sm" onclick="deleteSound(${s.id},'${s.command}')">âœ•</button>` : ''}
           </div>
         </td>
       </tr>`;
@@ -528,7 +528,7 @@ async function toggleActive(id, active) {
 }
 
 async function deleteSound(id, cmd) {
-  if (!confirm(`¿Eliminar "${cmd}"? Esta acción no se puede deshacer.`)) return;
+  if (!confirm(`Â¿Eliminar "${cmd}"? Esta acciÃ³n no se puede deshacer.`)) return;
   const res = await fetch(`${BASE}/api/sounds/${id}?password=${encodeURIComponent(PASSWORD)}`, { method: 'DELETE' });
   if (res.ok) { showToast('Sonido eliminado'); loadSounds(); }
   else showToast('Error al eliminar', true);
@@ -539,7 +539,7 @@ async function testSound(id) {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ password: PASSWORD })
   });
-  if (res.ok) showToast('▶ Reproduciendo en OBS');
+  if (res.ok) showToast('â–¶ Reproduciendo en OBS');
   else showToast('No hay OBS conectado', true);
 }
 
@@ -565,7 +565,7 @@ async function saveEdit() {
   const volume = parseInt(document.getElementById('edit-vol').value);
   const file = document.getElementById('edit-file').files[0];
 
-  if (!cmd) { showToast('El comando no puede estar vacío', true); return; }
+  if (!cmd) { showToast('El comando no puede estar vacÃ­o', true); return; }
 
   if (file) {
     const fd = new FormData();
@@ -603,3 +603,4 @@ function showToast(msg, error = false) {
 </script>
 </body>
 </html>
+

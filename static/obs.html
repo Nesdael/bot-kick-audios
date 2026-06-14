@@ -39,7 +39,8 @@
 const WS_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
 let socket;
 let notifTimer, sonidosTimer;
-let globalVol = parseFloat(localStorage.getItem('globalVol') ?? '80') / 100;
+let globalVol = parseFloat(localStorage.getItem('globalVol') ?? '80');
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function connect() {
   socket = new WebSocket(WS_URL);
@@ -47,14 +48,22 @@ function connect() {
     const data = JSON.parse(e.data);
     if (data.type === 'play') playAudio(data.url, data.command, data.volume ?? 80);
     else if (data.type === 'sonidos') showSonidos(data.commands);
-    else if (data.type === 'set_volume') { globalVol = data.value / 100; localStorage.setItem('globalVol', data.value); }
+    else if (data.type === 'set_volume') { globalVol = data.value; localStorage.setItem('globalVol', data.value); }
   };
   socket.onclose = () => setTimeout(connect, 3000);
 }
 
 function playAudio(url, command, soundVol) {
+  // Use Web Audio API so gain can exceed 1.0 (amplification beyond 100%)
   const audio = new Audio(url);
-  audio.volume = Math.min(1, (soundVol / 100) * globalVol);
+  audio.crossOrigin = 'anonymous';
+  const source = audioCtx.createMediaElementSource(audio);
+  const gainNode = audioCtx.createGain();
+  // soundVol and globalVol are 0-200, where 100 = normal, 200 = 2x amplification
+  gainNode.gain.value = (soundVol / 100) * (globalVol / 100);
+  source.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   audio.play().catch(console.error);
   const notif = document.getElementById('notification');
   notif.textContent = `🔊 ${command}`;
