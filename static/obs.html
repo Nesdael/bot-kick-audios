@@ -15,16 +15,17 @@
   #notification.show { opacity: 1; }
   #sonidos-panel {
     position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.92); border: 2px solid #53fc18; border-radius: 12px;
-    padding: 14px 20px; opacity: 0; transition: opacity 0.3s; pointer-events: none; max-width: 780px;
+    background: rgba(0,5,20,0.95); border: 2px solid #00aaff; border-radius: 14px;
+    padding: 18px 26px; opacity: 0; transition: opacity 0.4s; pointer-events: none; max-width: 780px;
+    box-shadow: 0 0 24px rgba(0,170,255,0.4);
   }
   #sonidos-panel.show { opacity: 1; }
-  #sonidos-panel h3 { color: #53fc18; font-size: 0.8rem; margin-bottom: 8px; }
-  #sonidos-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  #sonidos-panel h3 { color: #00aaff; font-size: 1rem; margin-bottom: 12px; letter-spacing: 0.03em; }
+  #sonidos-list { display: flex; flex-wrap: wrap; gap: 7px; }
   .cmd-chip {
-    background: rgba(83,252,24,0.1); border: 1px solid #53fc18;
-    color: #53fc18; border-radius: 5px; padding: 2px 8px;
-    font-size: 0.78rem; font-family: monospace;
+    background: rgba(0,170,255,0.15); border: 1px solid #00aaff;
+    color: #fff; border-radius: 7px; padding: 5px 13px;
+    font-size: 0.95rem; font-family: monospace; font-weight: 600;
   }
 </style>
 </head>
@@ -86,7 +87,7 @@ function showSonidos(commands) {
   document.getElementById('sonidos-list').innerHTML = commands.map(c => `<span class="cmd-chip">${c}</span>`).join('');
   panel.classList.add('show');
   clearTimeout(sonidosTimer);
-  sonidosTimer = setTimeout(() => panel.classList.remove('show'), 8000);
+  sonidosTimer = setTimeout(() => panel.classList.remove('show'), 20000);
 }
 
 connect();
