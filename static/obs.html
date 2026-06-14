@@ -53,18 +53,22 @@ function connect() {
   socket.onclose = () => setTimeout(connect, 3000);
 }
 
-function playAudio(url, command, soundVol) {
-  // Use Web Audio API so gain can exceed 1.0 (amplification beyond 100%)
-  const audio = new Audio(url);
-  audio.crossOrigin = 'anonymous';
-  const source = audioCtx.createMediaElementSource(audio);
-  const gainNode = audioCtx.createGain();
-  // soundVol and globalVol are 0-200, where 100 = normal, 200 = 2x amplification
-  gainNode.gain.value = (soundVol / 100) * (globalVol / 100);
-  source.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  audio.play().catch(console.error);
+async function playAudio(url, command, soundVol) {
+  try {
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    const source = audioCtx.createBufferSource();
+    source.buffer = audioBuffer;
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = (soundVol / 100) * (globalVol / 100);
+    source.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    source.start(0);
+  } catch(e) {
+    console.error('Error reproduciendo audio:', e);
+  }
   const notif = document.getElementById('notification');
   notif.textContent = `🔊 ${command}`;
   notif.classList.add('show');
