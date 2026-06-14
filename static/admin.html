@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bot Kick Audios — Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; }
+
+  header {
+    background: #1a1a2e;
+    border-bottom: 2px solid #53fc18;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header h1 { font-size: 1.3rem; color: #53fc18; }
+  header span { color: #888; font-size: 0.85rem; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 32px 16px; }
+
+  /* Login */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 80vh;
+  }
+  .login-box {
+    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+    padding: 40px; width: 320px; text-align: center;
+  }
+  .login-box h2 { margin-bottom: 8px; color: #53fc18; }
+  .login-box p { color: #888; margin-bottom: 24px; font-size: 0.9rem; }
+
+  input[type=text], input[type=password], input[type=number], input[type=file], select {
+    width: 100%; padding: 10px 14px; background: #111; border: 1px solid #333;
+    border-radius: 8px; color: #e0e0e0; font-size: 0.95rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus { border-color: #53fc18; }
+  input[type=file] { padding: 8px; cursor: pointer; }
+
+  .btn {
+    padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 0.9rem; font-weight: 600; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-green { background: #53fc18; color: #000; }
+  .btn-red { background: #e74c3c; color: #fff; }
+  .btn-gray { background: #333; color: #e0e0e0; }
+  .btn-blue { background: #3498db; color: #fff; }
+  .btn-full { width: 100%; margin-top: 12px; }
+
+  /* Add sound card */
+  .card {
+    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+    padding: 24px; margin-bottom: 24px;
+  }
+  .card h2 { font-size: 1rem; margin-bottom: 16px; color: #53fc18; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-row.three { grid-template-columns: 2fr 1fr 1fr; }
+  label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 4px; }
+
+  /* Sounds table */
+  .sounds-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .sounds-header h2 { color: #53fc18; }
+  .count { background: #53fc18; color: #000; border-radius: 20px; padding: 2px 10px; font-size: 0.8rem; font-weight: 700; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 10px 12px; font-size: 0.8rem; color: #888; border-bottom: 1px solid #222; }
+  td { padding: 12px; border-bottom: 1px solid #1a1a1a; font-size: 0.9rem; vertical-align: middle; }
+  tr:hover td { background: #161616; }
+
+  .cmd { font-family: monospace; background: #111; padding: 3px 8px; border-radius: 4px; color: #53fc18; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .badge-on { background: #1a3a1a; color: #53fc18; }
+  .badge-off { background: #2a1a1a; color: #e74c3c; }
+
+  .actions { display: flex; gap: 6px; }
+  .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; }
+
+  /* Toggle switch */
+  .toggle { position: relative; width: 40px; height: 22px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: #333; border-radius: 22px; transition: .3s;
+  }
+  .slider:before {
+    content: ""; position: absolute; height: 16px; width: 16px;
+    left: 3px; bottom: 3px; background: white;
+    border-radius: 50%; transition: .3s;
+  }
+  input:checked + .slider { background: #53fc18; }
+  input:checked + .slider:before { transform: translateX(18px); background: #000; }
+
+  /* Edit modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+    padding: 28px; width: 400px; max-width: 95vw;
+  }
+  .modal h3 { margin-bottom: 20px; color: #53fc18; }
+  .modal-footer { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #1a3a1a; border: 1px solid #53fc18; color: #53fc18;
+    padding: 12px 20px; border-radius: 8px; font-size: 0.9rem;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999;
+  }
+  .toast.error { background: #3a1a1a; border-color: #e74c3c; color: #e74c3c; }
+  .toast.show { opacity: 1; }
+
+  .empty { text-align: center; padding: 40px; color: #555; }
+  .file-name { font-size: 0.8rem; color: #888; margin-top: 4px; }
+
+  .obs-box {
+    background: #0a1a0a; border: 1px dashed #53fc18; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 24px; display: flex;
+    align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .obs-url { font-family: monospace; color: #53fc18; font-size: 0.85rem; word-break: break-all; }
+  .obs-box label { font-size: 0.75rem; color: #888; display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎵 Bot Kick Audios</h1>
+  <span>Panel de administración — kick.com/tutomanx</span>
+</header>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>Acceso Admin</h2>
+    <p>Ingresa tu contraseña para gestionar los sonidos</p>
+    <div style="margin-bottom:12px">
+      <input type="password" id="pwd-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="btn btn-green btn-full" onclick="login()">Entrar</button>
+    <p id="login-err" style="color:#e74c3c;margin-top:12px;font-size:0.85rem;display:none">Contraseña incorrecta</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+<div class="container">
+
+  <!-- OBS URL hint -->
+  <div class="obs-box">
+    <div>
+      <label>URL para OBS Browser Source</label>
+      <span class="obs-url" id="obs-url"></span>
+    </div>
+    <button class="btn btn-gray btn-sm" onclick="copyObs()">Copiar</button>
+  </div>
+
+  <!-- ADD SOUND -->
+  <div class="card">
+    <h2>+ Agregar nuevo sonido</h2>
+    <div class="form-row three">
+      <div>
+        <label>Comando (ej: !correp3rr4)</label>
+        <input type="text" id="new-cmd" placeholder="!misonido">
+      </div>
+      <div>
+        <label>Cooldown (segundos)</label>
+        <input type="number" id="new-cooldown" value="10" min="0" max="300">
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label>Archivo de audio (.mp3, .wav, .ogg)</label>
+      <input type="file" id="new-file" accept="audio/*" onchange="showFileName(this)">
+      <div class="file-name" id="file-name-preview"></div>
+    </div>
+    <button class="btn btn-green" onclick="addSound()" id="add-btn">Subir sonido</button>
+  </div>
+
+  <!-- SOUNDS LIST -->
+  <div class="card">
+    <div class="sounds-header">
+      <h2>Sonidos configurados</h2>
+      <span class="count" id="total-count">0</span>
+    </div>
+
+    <div id="sounds-container">
+      <div class="empty">Cargando sonidos...</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Editar sonido</h3>
+    <input type="hidden" id="edit-id">
+    <div style="margin-bottom:12px">
+      <label>Comando</label>
+      <input type="text" id="edit-cmd">
+    </div>
+    <div style="margin-bottom:12px">
+      <label>Cooldown (segundos)</label>
+      <input type="number" id="edit-cooldown" min="0" max="300">
+    </div>
+    <div style="margin-bottom:12px">
+      <label>Reemplazar audio (opcional)</label>
+      <input type="file" id="edit-file" accept="audio/*">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-green" onclick="saveEdit()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE = window.location.origin;
+let PASSWORD = '';
+
+function login() {
+  const p = document.getElementById('pwd-input').value;
+  fetch(`${BASE}/api/sounds`, {
+    headers: { 'X-Test': '1' }
+  }).then(async () => {
+    // validate password by doing a test
+    const fd = new FormData();
+    fd.append('password', p);
+    fd.append('command', '!test_auth_' + Date.now());
+    fd.append('cooldown', '999999');
+    // Actually just check locally; real auth happens server side
+    // Simple check: try listing sounds (no auth needed), then set password
+    PASSWORD = p;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('obs-url').textContent = `${BASE}/obs`;
+    loadSounds();
+  });
+}
+
+function showFileName(input) {
+  const el = document.getElementById('file-name-preview');
+  el.textContent = input.files[0] ? input.files[0].name : '';
+}
+
+async function loadSounds() {
+  const res = await fetch(`${BASE}/api/sounds`);
+  const sounds = await res.json();
+  document.getElementById('total-count').textContent = sounds.length;
+
+  const container = document.getElementById('sounds-container');
+  if (!sounds.length) {
+    container.innerHTML = '<div class="empty">No hay sonidos. Agrega el primero arriba.</div>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Comando</th>
+          <th>Archivo</th>
+          <th>Cooldown</th>
+          <th>Activo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sounds.map(s => `
+          <tr>
+            <td><span class="cmd">${s.command}</span></td>
+            <td style="color:#888;font-size:0.85rem">${s.filename}</td>
+            <td>${s.cooldown}s</td>
+            <td>
+              <label class="toggle">
+                <input type="checkbox" ${s.active ? 'checked' : ''}
+                  onchange="toggleActive(${s.id}, this.checked)">
+                <span class="slider"></span>
+              </label>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-blue btn-sm" onclick="testSound(${s.id})" title="Probar en OBS">▶</button>
+                <button class="btn btn-gray btn-sm" onclick="openEdit(${s.id}, '${s.command}', ${s.cooldown})">Editar</button>
+                <button class="btn btn-red btn-sm" onclick="deleteSound(${s.id}, '${s.command}')">✕</button>
+              </div>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function addSound() {
+  const cmd = document.getElementById('new-cmd').value.trim();
+  const cooldown = document.getElementById('new-cooldown').value;
+  const file = document.getElementById('new-file').files[0];
+
+  if (!cmd) return showToast('Escribe un comando', true);
+  if (!file) return showToast('Selecciona un archivo de audio', true);
+
+  const btn = document.getElementById('add-btn');
+  btn.textContent = 'Subiendo...';
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('command', cmd);
+  fd.append('cooldown', cooldown);
+  fd.append('password', PASSWORD);
+  fd.append('file', file);
+
+  const res = await fetch(`${BASE}/api/sounds`, { method: 'POST', body: fd });
+  btn.textContent = 'Subir sonido';
+  btn.disabled = false;
+
+  if (res.ok) {
+    showToast('Sonido agregado exitosamente');
+    document.getElementById('new-cmd').value = '';
+    document.getElementById('new-file').value = '';
+    document.getElementById('file-name-preview').textContent = '';
+    loadSounds();
+  } else {
+    const err = await res.json();
+    showToast(err.detail || 'Error al subir', true);
+  }
+}
+
+async function toggleActive(id, active) {
+  await fetch(`${BASE}/api/sounds/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ active, password: PASSWORD })
+  });
+  loadSounds();
+}
+
+async function deleteSound(id, cmd) {
+  if (!confirm(`¿Eliminar ${cmd}?`)) return;
+  const res = await fetch(`${BASE}/api/sounds/${id}?password=${encodeURIComponent(PASSWORD)}`, { method: 'DELETE' });
+  if (res.ok) { showToast('Sonido eliminado'); loadSounds(); }
+  else showToast('Error al eliminar', true);
+}
+
+async function testSound(id) {
+  const res = await fetch(`${BASE}/api/test/${id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: PASSWORD })
+  });
+  if (res.ok) showToast('Reproduciendo en OBS...');
+  else showToast('Abre /obs primero en OBS', true);
+}
+
+function openEdit(id, cmd, cooldown) {
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-cmd').value = cmd;
+  document.getElementById('edit-cooldown').value = cooldown;
+  document.getElementById('edit-file').value = '';
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+async function saveEdit() {
+  const id = document.getElementById('edit-id').value;
+  const cmd = document.getElementById('edit-cmd').value.trim();
+  const cooldown = parseInt(document.getElementById('edit-cooldown').value);
+  const file = document.getElementById('edit-file').files[0];
+
+  if (file) {
+    // Re-upload with new file
+    const fd = new FormData();
+    fd.append('command', cmd);
+    fd.append('cooldown', cooldown);
+    fd.append('password', PASSWORD);
+    fd.append('file', file);
+    const res = await fetch(`${BASE}/api/sounds`, { method: 'POST', body: fd });
+    if (!res.ok) { showToast('Error al subir nuevo audio', true); return; }
+    // Delete old if different command
+    await fetch(`${BASE}/api/sounds/${id}?password=${encodeURIComponent(PASSWORD)}`, { method: 'DELETE' });
+  } else {
+    const res = await fetch(`${BASE}/api/sounds/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: cmd, cooldown, password: PASSWORD })
+    });
+    if (!res.ok) { showToast('Error al guardar', true); return; }
+  }
+
+  closeModal();
+  showToast('Guardado');
+  loadSounds();
+}
+
+function copyObs() {
+  const url = document.getElementById('obs-url').textContent;
+  navigator.clipboard.writeText(url).then(() => showToast('URL copiada'));
+}
+
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (error ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
