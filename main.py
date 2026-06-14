@@ -8,7 +8,7 @@ import websockets
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from supabase import create_client
 
@@ -95,9 +95,11 @@ async def handle_command(content: str):
             last = cooldowns.get(sound["command"], 0)
             if time.time() - last >= sound["cooldown"]:
                 cooldowns[sound["command"]] = time.time()
+                filename = sound["audio_url"].split("/")[-1]
+                proxy_url = f"{APP_URL}/audio/{filename}" if APP_URL else sound["audio_url"]
                 await broadcast_obs({
                     "type": "play",
-                    "url": sound["audio_url"],
+                    "url": proxy_url,
                     "command": sound["command"],
                     "volume": sound.get("volume", 80)
                 })
@@ -282,10 +284,27 @@ async def test_sound(sound_id: int, request: Request):
     if not row.data:
         raise HTTPException(status_code=404)
     sound = row.data[0]
+    filename = sound["audio_url"].split("/")[-1]
+    proxy_url = f"{APP_URL}/audio/{filename}" if APP_URL else sound["audio_url"]
     await broadcast_obs({
         "type": "play",
-        "url": sound["audio_url"],
+        "url": proxy_url,
         "command": sound["command"],
         "volume": sound.get("volume", 80)
     })
     return {"ok": True}
+
+
+@app.get("/audio/{filename}")
+async def proxy_audio(filename: str):
+    url = supabase.storage.from_("audios").get_public_url(filename)
+    async with httpx.AsyncClient() as client:
+        r = await client.get(url)
+        if r.status_code != 200:
+            raise HTTPException(status_code=404)
+    content_type = r.headers.get("content-type", "audio/mpeg")
+    return StreamingResponse(
+        iter([r.content]),
+        media_type=content_type,
+        headers={"Cache-Control": "public, max-age=3600", "Access-Control-Allow-Origin": "*"}
+    )
