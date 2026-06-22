@@ -204,10 +204,20 @@ async def keep_alive():
         await asyncio.sleep(600)
 
 
+async def cleanup_user_cooldowns():
+    while True:
+        await asyncio.sleep(300)
+        now = time.time()
+        stale = [u for u, t in list(user_cooldowns.items()) if now - t > USER_COOLDOWN_REGULAR]
+        for u in stale:
+            user_cooldowns.pop(u, None)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     asyncio.create_task(kick_bot())
     asyncio.create_task(keep_alive())
+    asyncio.create_task(cleanup_user_cooldowns())
     yield
 
 
@@ -361,13 +371,24 @@ async def test_sound(sound_id: int, request: Request):
 @app.get("/audio/{filename}")
 async def proxy_audio(filename: str):
     url = supabase.storage.from_("audios").get_public_url(filename)
-    async with httpx.AsyncClient() as client:
-        r = await client.get(url)
-        if r.status_code != 200:
-            raise HTTPException(status_code=404)
+    client = httpx.AsyncClient()
+    r = await client.send(client.build_request("GET", url), stream=True)
+    if r.status_code != 200:
+        await r.aclose()
+        await client.aclose()
+        raise HTTPException(status_code=404)
     content_type = r.headers.get("content-type", "audio/mpeg")
+
+    async def generate():
+        try:
+            async for chunk in r.aiter_bytes(8192):
+                yield chunk
+        finally:
+            await r.aclose()
+            await client.aclose()
+
     return StreamingResponse(
-        iter([r.content]),
+        generate(),
         media_type=content_type,
         headers={"Cache-Control": "public, max-age=3600", "Access-Control-Allow-Origin": "*"}
     )
